@@ -1,6 +1,8 @@
 "use client";
 
+import { User } from "@/types";
 import sdk from "@farcaster/frame-sdk";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Poor_Story } from "next/font/google";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -11,11 +13,11 @@ const poorStory = Poor_Story({
 });
 
 export default function Home() {
-	const [userData, setUserData] = useState<{
-		fid?: string;
-		username?: string;
-		pfpUrl?: string;
-	}>({});
+	const { data: user, isLoading } = useQuery<User>({
+		queryKey: ["user"],
+		queryFn: async (): Promise<User> => (await sdk.context).user as User,
+		refetchOnWindowFocus: false,
+	});
 
 	const [text, setText] = useState(
 		"One rainy afternoon, Emma found an old, rusty key while walking through the park." +
@@ -26,37 +28,49 @@ export default function Home() {
 
 	const inputRef = useRef<HTMLTextAreaElement>(null);
 	const penSoundRef = useRef<HTMLAudioElement | null>(null);
+	const bgSoundRef = useRef<HTMLAudioElement | null>(null);
+
+	const mutation = useMutation({
+		mutationFn: async () =>
+			fetch("/api/story", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ continuation }),
+			}).then(res => {
+				if (!res.ok) throw new Error("Failed to send");
+				return res.json();
+			}),
+		onSuccess: data => {
+			console.log("Saved!", data);
+		},
+		onError: error => {
+			console.error("Error saving:", error);
+		},
+	});
 
 	useEffect(() => {
-		async function initializeContext() {
-			const context = await sdk.context;
+		const context = new AudioContext();
 
-			const user = context?.user;
+		bgSoundRef.current = new Audio("/sounds/bg.wav");
+		bgSoundRef.current.loop = true;
 
-			if (user) {
-				setUserData({
-					fid: user.fid ? String(user.fid) : undefined,
-					username: user.username || undefined,
-					pfpUrl: user.pfpUrl || "/images/profile.png",
-				});
-			}
+		const source = context.createMediaElementSource(bgSoundRef.current);
+		const gainNode = context.createGain();
+		gainNode.gain.value = 0.1;
+		source.connect(gainNode).connect(context.destination);
 
-			console.log(context.user);
-		}
-
-		// initializeContext();
+		bgSoundRef.current.play().catch(console.warn);
 
 		penSoundRef.current = new Audio("/sounds/pen.wav");
-		penSoundRef.current.volume = 0.3;
 
 		sdk.actions.ready({ disableNativeGestures: true });
 	}, []);
 
 	return (
 		<>
-			<Header pfpUrl={userData.pfpUrl || "/images/profile.png"} />
+			<Header pfpUrl={user?.pfpUrl || "/images/profile.png"} />
 			<main>
-				<div className="fixed top-35 left-4 right-4 flex justify-center">
+				<div className="fixed top-32 left-4 right-4 flex justify-center">
 					<div className="relative max-w-sm w-full">
 						<Image
 							src="/images/scroll.png"
@@ -117,13 +131,21 @@ export default function Home() {
 				</div>
 
 				<div className="fixed bottom-13 left-0 right-0 w-full flex justify-center pointer-events-auto">
-					<button className="flex justify-center w-11/12 py-2.5 bg-white rounded-3xl cursor-pointer">
-						<Image
-							src="/images/feather.png"
-							alt="feather"
-							width={32}
-							height={32}
-						/>
+					<button
+						className="flex justify-center w-11/12 py-2.5 bg-white rounded-3xl cursor-pointer"
+						onClick={() => mutation.mutate()}
+						disabled={mutation.isPending}
+					>
+						{mutation.isPending ? (
+							"..."
+						) : (
+							<Image
+								src="/images/feather.png"
+								alt="feather"
+								width={32}
+								height={32}
+							/>
+						)}
 					</button>
 				</div>
 			</main>

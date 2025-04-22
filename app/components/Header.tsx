@@ -29,11 +29,14 @@ const Header = ({ pfpUrl }: { pfpUrl: string }) => {
 				</span>
 			</h1>
 
-			<button
-				type="button"
-				className="fixed top-13 right-4 rounded-full h-9 w-9 border-2 border-[var(--primary)]"
-			>
-				<Image src={pfpUrl} alt="profile" width={38} height={38} />
+			<button type="button" className="fixed top-13 right-4 h-9 w-9">
+				<Image
+					className="rounded-full border-3 border-[var(--primary)]"
+					src={pfpUrl}
+					alt="profile"
+					width={38}
+					height={38}
+				/>
 			</button>
 		</header>
 	);
