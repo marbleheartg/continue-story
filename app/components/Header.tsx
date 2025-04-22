@@ -5,25 +5,36 @@ const spicyRice = Spicy_Rice({
 	weight: "400",
 });
 
-const Header = () => {
+const Header = ({ pfpUrl }: { pfpUrl: string }) => {
 	return (
-		<header className="flex justify-between  pt-12">
-			<div className="cursor-pointer">
-				<Image src="/images/info.png" alt="info" width={38} height={38} />
-			</div>
+		<header>
+			<button
+				type="button"
+				className="fixed top-13 left-4 flex items-center justify-center h-8.5 w-8.5 rounded-full bg-white/20 backdrop-blur-sm text-white font-bold text-xl focus:outline-none focus:ring-2 focus:ring-white/50 hover:bg-white/30 active:bg-white/40 transition-all"
+			>
+				<Image src="/images/info.png" alt="info" width={28} height={28} />
+			</button>
 
 			<h1
-				className={`flex flex-col text-[var(--primary)] leading-[0.89] pt-1 ${spicyRice.className}`}
+				className={`fixed top-13 left-0 right-0 flex flex-col items-center text-[var(--primary)] ${spicyRice.className}`}
 			>
-				<span className="text-[28px] uppercase">Continue</span>
-				<span className="">
-					<span className="text-[24px]  pr-1 ">the</span>
-					<span className="text-[28px]  tracking-[7%] uppercase">story</span>
+				<span className="text-3xl leading-[0.83] uppercase">Continue</span>
+				<span className="translate-x-0.5">
+					<span className="text-2xl pr-1 leading-[0.83] tracking-[2%]">
+						the
+					</span>
+					<span className="text-3xl leading-[0.83] tracking-[7%] uppercase">
+						story
+					</span>
 				</span>
 			</h1>
-			<div className="cursor-pointer">
-				<Image src="/images/profile.png" alt="profile" width={38} height={38} />
-			</div>
+
+			<button
+				type="button"
+				className="fixed top-13 right-4 rounded-full h-9 w-9 border-2 border-[var(--primary)]"
+			>
+				<Image src={pfpUrl} alt="profile" width={38} height={38} />
+			</button>
 		</header>
 	);
 };
