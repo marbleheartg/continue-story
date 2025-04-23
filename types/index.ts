@@ -1,6 +1,6 @@
 export type User = {
 	fid: number;
-	username: string;
-	pfpUrl: string;
+	username?: string;
 	displayName?: string;
+	pfpUrl?: string;
 };

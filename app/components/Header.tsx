@@ -1,3 +1,5 @@
+import { store } from "@/store";
+import { useStore } from "@tanstack/react-store";
 import { Spicy_Rice } from "next/font/google";
 import Image from "next/image";
 
@@ -5,18 +7,29 @@ const spicyRice = Spicy_Rice({
 	weight: "400",
 });
 
-const Header = ({ pfpUrl }: { pfpUrl: string }) => {
+const Header = () => {
+	const user = useStore(store, s => s.user);
+
 	return (
 		<header>
 			<button
 				type="button"
-				className="fixed top-13 left-4 flex items-center justify-center h-8.5 w-8.5 rounded-full bg-white/20 backdrop-blur-sm text-white font-bold text-xl focus:outline-none focus:ring-2 focus:ring-white/50 hover:bg-white/30 active:bg-white/40 transition-all"
+				className="fixed top-13 left-4 flex items-center justify-center h-8.5 w-8.5 rounded-full bg-white/20 backdrop-blur-sm cursor-pointer"
+				onClick={() => {
+					console.log("adsffsad");
+					store.setState(state => ({
+						...state,
+						story: "",
+						continue: "",
+						rules: { enabled: !state.rules.enabled, text: state.rules.text },
+					}));
+				}}
 			>
 				<Image src="/images/info.png" alt="info" width={28} height={28} />
 			</button>
 
 			<h1
-				className={`fixed top-13 left-0 right-0 flex flex-col items-center text-[var(--primary)] ${spicyRice.className}`}
+				className={`fixed top-13 left-0 right-0 flex flex-col items-center mx-auto text-center text-[var(--primary)] ${spicyRice.className} w-fit`}
 			>
 				<span className="text-3xl leading-[0.83] uppercase">Continue</span>
 				<span className="translate-x-0.5">
@@ -32,7 +45,7 @@ const Header = ({ pfpUrl }: { pfpUrl: string }) => {
 			<button type="button" className="fixed top-13 right-4 h-9 w-9">
 				<Image
 					className="rounded-full border-3 border-[var(--primary)]"
-					src={pfpUrl}
+					src={user?.pfpUrl || "/images/profile.png"}
 					alt="profile"
 					width={38}
 					height={38}
