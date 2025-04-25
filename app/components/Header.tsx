@@ -1,5 +1,4 @@
-import { store } from "@/store";
-import { useStore } from "@tanstack/react-store";
+import { store, updateStore } from "@/store";
 import { Spicy_Rice } from "next/font/google";
 import Image from "next/image";
 
@@ -8,7 +7,7 @@ const spicyRice = Spicy_Rice({
 });
 
 const Header = () => {
-	const user = useStore(store, s => s.user);
+	const { user } = store();
 
 	return (
 		<header>
@@ -16,16 +15,18 @@ const Header = () => {
 				type="button"
 				className="fixed top-13 left-4 flex items-center justify-center h-8.5 w-8.5 rounded-full bg-white/20 backdrop-blur-sm cursor-pointer"
 				onClick={() => {
-					console.log("adsffsad");
-					store.setState(state => ({
-						...state,
-						story: "",
-						continue: "",
-						rules: { enabled: !state.rules.enabled, text: state.rules.text },
+					updateStore(prev => ({
+						rules: { enabled: !prev.rules.enabled, text: prev.rules.text },
 					}));
 				}}
 			>
-				<Image src="/images/info.png" alt="info" width={28} height={28} />
+				<Image
+					src="/images/info.png"
+					alt="info"
+					width={28}
+					height={28}
+					draggable="false"
+				/>
 			</button>
 
 			<h1
@@ -49,6 +50,7 @@ const Header = () => {
 					alt="profile"
 					width={38}
 					height={38}
+					draggable="false"
 				/>
 			</button>
 		</header>

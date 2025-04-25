@@ -1,27 +1,24 @@
-import { User } from "@/types";
-import { Store } from "@tanstack/store";
+import { MyStore } from "@/types";
+import { create } from "zustand";
 
-type MyStore = {
-	user?: User;
-	story?: string;
-	continue: string;
-	rules: { enabled: boolean; text: string };
-	scrollOpen: boolean;
-	scrollAnimationDone: boolean;
-};
-
-export const store = new Store<MyStore>({
-	story:
-		"One rainy afternoon, Emma found an old, rusty key while walking through the park.",
-	continue: "",
+export const store = create<MyStore>(set => ({
+	newStoryPart: {
+		text: "",
+		createdAt: new Date(),
+	},
 	rules: {
 		enabled: false,
-		text: "No rules! Though you get 1 point for each like from others.",
+		text: `Write one sentence to spark a fun short story — the more creative, the better! Each like the authors get earns them 1 point. The story is limited to 5 sentences. Let’s have fun! ♡`,
 	},
 	scrollOpen: true,
-	scrollAnimationDone: true,
-});
+	scrollVisible: true,
 
-store.subscribe(() => {
-	console.log("Change:", store.state);
-});
+	updateStore: newState =>
+		set(prev =>
+			typeof newState === "function"
+				? { ...prev, ...newState(prev) }
+				: { ...prev, ...newState }
+		),
+}));
+
+export const updateStore = store.getState().updateStore;
