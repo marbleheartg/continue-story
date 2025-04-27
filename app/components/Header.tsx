@@ -3,6 +3,7 @@ import { Spicy_Rice } from "next/font/google";
 import Image from "next/image";
 
 const spicyRice = Spicy_Rice({
+	subsets: ["latin", "latin-ext"],
 	weight: "400",
 });
 

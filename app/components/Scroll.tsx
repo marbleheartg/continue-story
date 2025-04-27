@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 const poorStory = Poor_Story({
+	subsets: ["latin"],
 	weight: "400",
 });
 
