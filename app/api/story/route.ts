@@ -7,13 +7,25 @@ import { z } from "zod";
 
 const client = await clientPromise;
 const db = client.db("main");
-const collection = db.collection<Story>("stories");
 
 export async function GET() {
 	let randStory: Story;
 
 	if (Math.random() < 0.5) {
+		const collection = db.collection<Story>("stories");
+
 		const stories = (await collection.find({}).toArray()) as unknown as Story[];
+
+		if (!stories.length) {
+			randStory = {
+				uuid: randomUUID(),
+				parts: [],
+				likes: 0,
+				createdAt: new Date(),
+			};
+
+			return NextResponse.json({ randStory });
+		}
 
 		const randIdx = Math.floor(Math.random() * stories.length);
 
@@ -22,6 +34,7 @@ export async function GET() {
 		randStory = {
 			uuid: randomUUID(),
 			parts: [],
+			likes: 0,
 			createdAt: new Date(),
 		};
 	}
@@ -53,7 +66,7 @@ export async function POST(req: NextRequest) {
 
 		if (!validation.success) {
 			return NextResponse.json(
-				{ error: validation.error.message },
+				{ error: validation.error.issues[0]?.message },
 				{ status: 400 }
 			);
 		}
@@ -61,28 +74,64 @@ export async function POST(req: NextRequest) {
 		newStoryPart.uuid = randomUUID();
 		newStoryPart.text = newStoryPart.text.trimEnd();
 
-		if (newStoryPart.text.at(-1) !== ".")
-			newStoryPart.text = newStoryPart.text + ".";
+		if (!newStoryPart.text.trimEnd().endsWith(".")) {
+			newStoryPart.text = newStoryPart.text.trimEnd() + ". ";
+		} else {
+			newStoryPart.text = newStoryPart.text.trimEnd() + " ";
+		}
 
-		newStoryPart.text += " ";
+		if (story.parts && story.parts?.length >= 4) {
+			const session = client.startSession();
 
-		await collection.updateOne(
-			{ uuid: story.uuid },
-			{
-				$push: {
-					parts: {
-						uuid: randomUUID(),
-						fid: decoded.fid,
-						text: newStoryPart.text,
+			try {
+				await session.withTransaction(async () => {
+					const collection = db.collection<Story>("stories");
+					const completedCollection = db.collection<Story>("completedStories");
+
+					await collection.deleteOne({ uuid: story.uuid }, { session });
+
+					await completedCollection.updateOne(
+						{ uuid: story.uuid },
+						{
+							$push: {
+								parts: {
+									uuid: randomUUID(),
+									fid: decoded.fid,
+									text: newStoryPart.text,
+									createdAt: new Date(),
+								},
+							},
+							$setOnInsert: {
+								createdAt: new Date(),
+							},
+						},
+						{ upsert: true, session }
+					);
+				});
+			} finally {
+				await session.endSession();
+			}
+		} else {
+			const collection = db.collection<Story>("stories");
+
+			await collection.updateOne(
+				{ uuid: story.uuid },
+				{
+					$push: {
+						parts: {
+							uuid: randomUUID(),
+							fid: decoded.fid,
+							text: newStoryPart.text,
+							createdAt: new Date(),
+						},
+					},
+					$setOnInsert: {
 						createdAt: new Date(),
 					},
 				},
-				$setOnInsert: {
-					createdAt: new Date(),
-				},
-			},
-			{ upsert: true }
-		);
+				{ upsert: true }
+			);
+		}
 
 		return NextResponse.json({ success: true });
 	} catch (err) {

@@ -1,3 +1,4 @@
+import { default as getNewStory, default as getStory } from "@/lib/getStory";
 import { store, updateStore } from "@/store";
 import { AnimatePresence, motion } from "framer-motion";
 import { Poor_Story } from "next/font/google";
@@ -15,38 +16,30 @@ const Scroll = () => {
 	// const penSoundRef = useRef<HTMLAudioElement | null>(null);
 
 	useEffect(() => {
-		async function init() {
-			const res = await fetch("/api/story");
-
-			const { randStory } = await res.json();
-
-			updateStore({ story: randStory });
-		}
-
-		init();
+		getNewStory();
 
 		// penSoundRef.current = new Audio("/sounds/pen.wav");
 	}, []);
 
 	return (
 		<div
-			className="fixed top-30 left-2 right-2 flex justify-center"
-			onClick={() => {
-				updateStore(prev => ({ scrollOpen: !prev.scrollOpen }));
-			}}
+			className="fixed top-28 left-2 right-2 flex justify-center"
+			// onClick={() => {
+			// 	updateStore(prev => ({ scrollOpen: !prev.scrollOpen }));
+			// }}
 		>
 			<div className="relative max-w-[360px] w-full">
-				<div className="cursor-pointer relative w-full h-[450px]">
+				<div className="relative w-full h-[450px]">
 					<AnimatePresence mode="wait">
 						{scrollOpen ? (
 							<motion.div
 								key="open"
-								initial={{ opacity: 1, y: -5 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 1, y: 5 }}
+								initial={{ y: -20 }}
+								animate={{ y: 0 }}
+								exit={{ y: 20 }}
 								transition={{
 									type: "spring",
-									bounce: 0.75,
+									bounce: 0.6,
 									duration: 0.5,
 								}}
 								onAnimationComplete={() => {
@@ -123,14 +116,25 @@ const Scroll = () => {
 								</div>
 
 								{!rules.enabled && scrollOpen && scrollVisible && (
-									<Image
-										className="absolute z-10 bottom-[3%] right-[3%] cursor-pointer"
-										src="/images/like.png"
-										alt="like"
-										width={49}
-										height={49}
-										draggable="false"
-									/>
+									<div className="flex absolute z-10 bottom-[4%] right-[3%]">
+										<Image
+											className="cursor-pointer object-contain"
+											src="/images/reload.png"
+											alt="reload"
+											width={38}
+											height={38}
+											draggable="false"
+											onClick={getStory}
+										/>
+										<Image
+											className="cursor-pointer object-contain"
+											src="/images/like.png"
+											alt="like"
+											width={42}
+											height={42}
+											draggable="false"
+										/>
+									</div>
 								)}
 								{scrollOpen && scrollVisible && (
 									<div className="absolute inset-10 -z-10 shadow-[0_0_25px_60px_rgba(0,0,0,0.3)]"></div>
@@ -139,13 +143,13 @@ const Scroll = () => {
 						) : (
 							<motion.div
 								key="closed"
-								initial={{ opacity: 1, y: -5 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 1, y: 5 }}
+								initial={{ opacity: 1, y: 0 }}
+								animate={{ opacity: 1, y: 120 }}
+								exit={{ opacity: 1, x: -500 }}
 								transition={{
 									type: "spring",
-									bounce: 0.75,
-									duration: 0.5,
+									bounce: 0.6,
+									duration: 3,
 								}}
 								onAnimationComplete={() => {
 									updateStore({

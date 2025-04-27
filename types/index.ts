@@ -35,5 +35,6 @@ export type NewStoryPart = {
 export type Story = {
 	uuid?: string;
 	parts?: NewStoryPart[];
+	likes: number;
 	createdAt?: Date;
 };

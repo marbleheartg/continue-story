@@ -45,7 +45,7 @@ const Header = () => {
 
 			<button type="button" className="fixed top-13 right-4 h-9 w-9">
 				<Image
-					className="rounded-full border-3 border-[var(--primary)]"
+					className="rounded-full border-2 border-white"
 					src={user?.pfpUrl || "/images/profile.png"}
 					alt="profile"
 					width={38}
