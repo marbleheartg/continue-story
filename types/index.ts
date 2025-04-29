@@ -1,40 +1,27 @@
 import { AccountLocation } from "@farcaster/frame-core/dist/context";
 
-export type MyStore = {
-	user?: User;
-	story?: Story;
-	newStoryPart: NewStoryPart;
-	rules: { enabled: boolean; text: string };
-	scrollOpen: boolean;
-	scrollVisible: boolean;
-	updateStore: (
-		newState: Partial<MyStore> | ((prev: MyStore) => Partial<MyStore>)
-	) => void;
+type DatabaseFields = {
+	uuid?: string;
+	createdAt?: Date;
 };
 
-// подумать убрать дб поля или нет
-
 export type User = {
-	uuid?: string;
-	fid?: string | number;
+	fid?: number;
 	username?: string;
 	displayName?: string;
 	pfpUrl?: string;
 	location?: AccountLocation;
 	session?: string;
-	createdAt?: Date;
-};
+} & DatabaseFields & { lastLogged?: Date };
 
-export type NewStoryPart = {
-	uuid?: string;
-	fid?: string;
+export type StoryPart = {
+	fid?: number;
 	text: string;
-	createdAt?: Date;
-};
+} & DatabaseFields;
+
+export type fid = number;
 
 export type Story = {
-	uuid?: string;
-	parts?: NewStoryPart[];
-	likes: number;
-	createdAt?: Date;
-};
+	parts: StoryPart[];
+	likes: fid[];
+} & DatabaseFields;

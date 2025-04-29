@@ -1,4 +1,6 @@
 import { store, updateStore } from "@/store";
+import { delay } from "@/utils/delay";
+import sdk from "@farcaster/frame-sdk";
 import { Spicy_Rice } from "next/font/google";
 import Image from "next/image";
 
@@ -15,19 +17,21 @@ const Header = () => {
 			<button
 				type="button"
 				className="fixed top-13 left-4 flex items-center justify-center h-8.5 w-8.5 rounded-full bg-white/20 backdrop-blur-sm cursor-pointer"
-				onClick={() => {
-					updateStore(prev => ({
-						rules: { enabled: !prev.rules.enabled, text: prev.rules.text },
-					}));
+				onClick={async () => {
+					try {
+						updateStore({ scrollOpen: false });
+
+						updateStore(prev => ({
+							rules: { ...prev.rules, enabled: !prev.rules.enabled },
+						}));
+					} catch (error) {
+					} finally {
+						await delay(1500);
+						updateStore({ scrollOpen: true });
+					}
 				}}
 			>
-				<Image
-					src="/images/info.png"
-					alt="info"
-					width={28}
-					height={28}
-					draggable="false"
-				/>
+				<Image src="/images/info.png" alt="info" width={28} height={28} />
 			</button>
 
 			<h1
@@ -44,14 +48,21 @@ const Header = () => {
 				</span>
 			</h1>
 
-			<button type="button" className="fixed top-13 right-4 h-9 w-9">
+			<button
+				type="button"
+				className="fixed top-13 right-4 h-9 w-9"
+				onClick={async () => {
+					const fid = store.getState().user?.fid;
+
+					if (fid) await sdk.actions.viewProfile({ fid });
+				}}
+			>
 				<Image
 					className="rounded-full border-2 border-white"
 					src={user?.pfpUrl || "/images/profile.png"}
 					alt="profile"
 					width={38}
 					height={38}
-					draggable="false"
 				/>
 			</button>
 		</header>

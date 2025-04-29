@@ -1,40 +1,38 @@
-import clientPromise from "@/lib/mongodb";
-import { Story } from "@/types";
-import jwt from "jsonwebtoken";
+import { stories } from "@/db";
+import { verifySession } from "@/lib/auth/verifySession";
 import { NextRequest, NextResponse } from "next/server";
-
-const client = await clientPromise;
-const db = client.db("main");
 
 export async function POST(req: NextRequest) {
 	try {
 		const {
-			story,
+			uuid,
 			like,
 			session,
-		}: { story: Story; like: number; session: string } = await req.json();
+		}: { uuid: string; like: boolean; session: string } = await req.json();
 
-		let decoded;
-		try {
-			decoded = jwt.verify(session, process.env.JWT_SECRET!) as { fid: string };
-		} catch (err) {
-			return new NextResponse("Invalid or expired token", { status: 400 });
-		}
+		const { fid } = verifySession(session);
 
-		if (like != 1) return NextResponse.json({ success: false });
+		const story = await stories.findOne({ uuid });
+		if (!story) throw new Error("No story found");
 
-		const collection = db.collection<Story>("stories");
-
-		await collection.updateOne(
-			{ uuid: story.uuid },
-			{
-				$inc: { likes: 1 },
-			}
+		await stories.updateOne(
+			{ uuid },
+			like
+				? {
+						$push: {
+							likes: fid,
+						},
+				  }
+				: {
+						$pull: {
+							likes: fid,
+						},
+				  }
 		);
 
 		return NextResponse.json({ success: true });
 	} catch (err) {
-		console.error("POST /api/story error:", err);
+		console.error(err);
 		return new NextResponse("Internal Server Error", { status: 500 });
 	}
 }

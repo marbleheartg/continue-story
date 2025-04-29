@@ -1,5 +1,6 @@
 "use client";
 
+import { login } from "@/lib/auth/login";
 import { updateStore } from "@/store";
 import { generateNonce } from "@farcaster/auth-client";
 import sdk from "@farcaster/frame-sdk";
@@ -12,60 +13,48 @@ export default function Home() {
 	// const bgSoundRef = useRef<HTMLAudioElement | null>(null);
 
 	useEffect(() => {
-		// const audioCtx = new AudioContext();
-		// bgSoundRef.current = new Audio("/sounds/bg.wav");
-		// bgSoundRef.current.loop = true;
-		// const source = audioCtx.createMediaElementSource(bgSoundRef.current);
-		// const gainNode = audioCtx.createGain();
-		// gainNode.gain.value = 0.1;
-		// source.connect(gainNode).connect(audioCtx.destination);
-		// bgSoundRef.current.play().catch(console.warn);
-
-		async function init() {
-			const context = await sdk.context;
-
-			updateStore({
-				user: context.user,
-			});
-
-			const nonce = generateNonce();
-
-			await sdk.actions.ready({ disableNativeGestures: true });
-
-			const { message, signature } = await sdk.actions.signIn({
-				nonce,
-			});
-
-			const res = await fetch("/api/login", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					message,
-					signature,
-					nonce,
-				}),
-			});
-
-			const { session }: { session: string } = await res.json();
-
-			updateStore(prev => ({
-				user: {
-					...prev.user,
-					session,
-				},
-			}));
-		}
+		// startAudio(bgSoundRef);
 
 		init();
 	}, []);
 
 	return (
-		<>
+		<div onDragStart={e => e.preventDefault()}>
 			<Header />
 			<main>
 				<Scroll />
 				<Button />
 			</main>
-		</>
+		</div>
 	);
+}
+
+async function init() {
+	const context = await sdk.context;
+
+	updateStore({
+		user: context.user,
+	});
+
+	const nonce = generateNonce();
+
+	await sdk.actions.ready({ disableNativeGestures: true });
+
+	try {
+		const { message, signature } = await sdk.actions.signIn({
+			nonce,
+		});
+
+		const { session } = await login(message, signature, nonce);
+
+		updateStore(prev => ({
+			user: {
+				...prev.user,
+				session,
+			},
+		}));
+	} catch (error) {
+		console.error(error);
+		await init();
+	}
 }

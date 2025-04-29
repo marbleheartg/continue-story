@@ -1,141 +1,118 @@
-import clientPromise from "@/lib/mongodb";
-import { NewStoryPart, Story } from "@/types";
+import { client, completedStories, stories } from "@/db";
+import { verifySession } from "@/lib/auth/verifySession";
 import { randomUUID } from "crypto";
-import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-const client = await clientPromise;
-const db = client.db("main");
-
 export async function GET() {
-	let randStory: Story;
+	const chance = Math.random();
 
-	if (Math.random() < 0.5) {
-		const collection = db.collection<Story>("stories");
+	let story;
 
-		const stories = (await collection.find({}).toArray()) as unknown as Story[];
-
-		if (!stories.length) {
-			randStory = {
-				uuid: randomUUID(),
-				parts: [],
-				likes: 0,
-				createdAt: new Date(),
-			};
-
-			return NextResponse.json({ randStory });
-		}
-
-		const randIdx = Math.floor(Math.random() * stories.length);
-
-		randStory = stories[randIdx];
-	} else {
-		randStory = {
+	if (chance < 0.5) {
+		story = {
 			uuid: randomUUID(),
 			parts: [],
-			likes: 0,
+			likes: [],
 			createdAt: new Date(),
 		};
+	} else {
+		try {
+			const allStories = await stories.find({}).toArray();
+
+			if (!allStories.length) {
+				story = {
+					uuid: randomUUID(),
+					parts: [],
+					likes: [],
+					createdAt: new Date(),
+				};
+			} else {
+				story = allStories[Math.floor(Math.random() * allStories.length)];
+			}
+		} catch (err) {
+			console.error(err);
+			return new NextResponse("Internal Server Error", { status: 500 });
+		}
 	}
 
-	return NextResponse.json({ randStory });
+	return NextResponse.json({ story });
 }
 
 export async function POST(req: NextRequest) {
 	try {
 		const {
-			story,
-			newStoryPart,
+			uuid,
+			text,
 			session,
-		}: { story: Story; newStoryPart: NewStoryPart; session: string } =
-			await req.json();
+		}: {
+			uuid: string;
+			text: string;
+			session: string;
+		} = await req.json();
 
-		let decoded;
-		try {
-			decoded = jwt.verify(session, process.env.JWT_SECRET!) as { fid: string };
-		} catch (err) {
-			return new NextResponse("Invalid or expired token", { status: 400 });
+		z.object({
+			uuid: z.string(),
+			text: z.string().min(15).max(30),
+			session: z.string(),
+		}).parse({
+			uuid,
+			text,
+			session,
+		});
+
+		const { fid } = verifySession(session);
+
+		const story = await stories.findOne({ uuid });
+
+		const newStoryPart = {
+			uuid: randomUUID(),
+			fid,
+			text: text.trimEnd(),
+			createdAt: new Date(),
+		};
+
+		if (!story) {
+			await stories.insertOne({
+				uuid: randomUUID(),
+				parts: [newStoryPart],
+				likes: [],
+				createdAt: new Date(),
+			});
+
+			return NextResponse.json({ success: true });
 		}
 
-		const validation = z
-			.string()
-			.min(15, "Text must exceed 15 characters")
-			.max(30, "Text must be smaller than 30 characters")
-			.safeParse(newStoryPart.text);
-
-		if (!validation.success) {
-			return NextResponse.json(
-				{ error: validation.error.issues[0]?.message },
-				{ status: 400 }
+		if (story.parts.length < 4) {
+			await stories.updateOne(
+				{ uuid },
+				{
+					$push: {
+						parts: newStoryPart,
+					},
+				}
 			);
-		}
-
-		newStoryPart.uuid = randomUUID();
-		newStoryPart.text = newStoryPart.text.trimEnd();
-
-		if (!newStoryPart.text.trimEnd().endsWith(".")) {
-			newStoryPart.text = newStoryPart.text.trimEnd() + ". ";
 		} else {
-			newStoryPart.text = newStoryPart.text.trimEnd() + " ";
-		}
-
-		if (story.parts && story.parts?.length >= 4) {
 			const session = client.startSession();
 
 			try {
-				await session.withTransaction(async () => {
-					const collection = db.collection<Story>("stories");
-					const completedCollection = db.collection<Story>("completedStories");
+				await stories.deleteOne({ uuid }, { session });
 
-					await collection.deleteOne({ uuid: story.uuid }, { session });
-
-					await completedCollection.updateOne(
-						{ uuid: story.uuid },
-						{
-							$push: {
-								parts: {
-									uuid: randomUUID(),
-									fid: decoded.fid,
-									text: newStoryPart.text,
-									createdAt: new Date(),
-								},
-							},
-							$setOnInsert: {
-								createdAt: new Date(),
-							},
-						},
-						{ upsert: true, session }
-					);
-				});
+				await completedStories.insertOne(
+					{
+						...story,
+						parts: [...story?.parts, newStoryPart],
+					},
+					{ session }
+				);
 			} finally {
 				await session.endSession();
 			}
-		} else {
-			const collection = db.collection<Story>("stories");
-
-			await collection.updateOne(
-				{ uuid: story.uuid },
-				{
-					$push: {
-						parts: {
-							uuid: randomUUID(),
-							fid: decoded.fid,
-							text: newStoryPart.text,
-							createdAt: new Date(),
-						},
-					},
-					$setOnInsert: {
-						createdAt: new Date(),
-					},
-				},
-				{ upsert: true }
-			);
 		}
 
 		return NextResponse.json({ success: true });
 	} catch (err) {
-		console.error("POST /api/story error:", err);
+		console.error(err);
 		return new NextResponse("Internal Server Error", { status: 500 });
 	}
 }

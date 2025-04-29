@@ -1,9 +1,11 @@
-import { default as getNewStory, default as getStory } from "@/lib/getStory";
+import getStory from "@/lib/api/getStory";
+import likeStory from "@/lib/api/likeStory";
 import { store, updateStore } from "@/store";
+import { delay } from "@/utils/delay";
 import { AnimatePresence, motion } from "framer-motion";
 import { Poor_Story } from "next/font/google";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const poorStory = Poor_Story({
 	subsets: ["latin"],
@@ -11,20 +13,30 @@ const poorStory = Poor_Story({
 });
 
 const Scroll = () => {
-	const { story, rules, newStoryPart, scrollOpen, scrollVisible } = store();
+	const { user, story, rules, storyPart, scrollOpen, scrollVisible } = store();
+
+	const [like, setLike] = useState(false);
 
 	const inputRef = useRef<HTMLTextAreaElement>(null);
 	// const penSoundRef = useRef<HTMLAudioElement | null>(null);
 
 	useEffect(() => {
-		getNewStory();
+		async function init() {
+			const { story } = await getStory();
 
-		// penSoundRef.current = new Audio("/sounds/pen.wav");
+			updateStore({
+				story,
+				storyPart: { text: "" },
+			});
+		}
+
+		init();
+		// initPen(penSoundRef);
 	}, []);
 
 	return (
 		<div
-			className="fixed top-28 left-2 right-2 flex justify-center"
+			className="fixed top-[17vh] left-2 right-2 flex justify-center"
 			// onClick={() => {
 			// 	updateStore(prev => ({ scrollOpen: !prev.scrollOpen }));
 			// }}
@@ -37,11 +49,11 @@ const Scroll = () => {
 								key="open"
 								initial={{ y: -20 }}
 								animate={{ y: 0 }}
-								exit={{ y: 20 }}
+								exit={{ y: 10 }}
 								transition={{
 									type: "spring",
 									bounce: 0.6,
-									duration: 0.5,
+									duration: 1,
 								}}
 								onAnimationComplete={() => {
 									updateStore({
@@ -69,33 +81,25 @@ const Scroll = () => {
 										) : (
 											<span>
 												{story?.parts.map(part => part.text).join("")}{" "}
-												{newStoryPart?.text}
+												{storyPart?.text}
 												{" _ "}
 												<span
 													className={`inline-block blink ${
-														newStoryPart.text.length < 15
+														storyPart.text.length < 15
 															? "text-red-900"
 															: "text-green-900"
 													}`}
 												>
-													{30 - newStoryPart.text.length}
+													{30 - storyPart.text.length}
 												</span>
 											</span>
 										))}
 
 									<textarea
 										ref={inputRef}
-										value={newStoryPart?.text}
+										value={storyPart?.text}
 										onKeyDown={e => {
-											if (
-												e.key !== "Backspace"
-												//  &&
-												// penSoundRef.current &&
-												// penSoundRef.current.paused
-											) {
-												// penSoundRef.current.currentTime = 0;
-												// penSoundRef.current.play().catch(console.warn);
-											}
+											// playPen(penSoundRef, e);
 										}}
 										onChange={e => {
 											const v = e.target.value;
@@ -104,7 +108,7 @@ const Scroll = () => {
 											if (l >= 31 || v.endsWith("  ")) return;
 
 											updateStore({
-												newStoryPart: {
+												storyPart: {
 													text: v,
 												},
 											});
@@ -125,15 +129,42 @@ const Scroll = () => {
 											width={38}
 											height={38}
 											draggable="false"
-											onClick={getStory}
+											onClick={async () => {
+												try {
+													updateStore({ scrollOpen: false });
+
+													const { story } = await getStory();
+
+													await updateStore({ story });
+												} catch (error) {
+													console.error("Story reloading error");
+												} finally {
+													await delay(1500);
+													updateStore({ scrollOpen: true });
+												}
+											}}
 										/>
 										<Image
-											className="cursor-pointer object-contain"
+											className={`cursor-pointer object-contain ${
+												(user?.fid && story?.likes.includes(user?.fid)) || like
+													? "opacity-80"
+													: "opacity-50"
+											}`}
 											src="/images/like.png"
 											alt="like"
 											width={42}
 											height={42}
 											draggable="false"
+											onClick={async () => {
+												try {
+													const { story, user } = store.getState();
+
+													if (story?.uuid && user?.session)
+														await likeStory(story?.uuid, like, user?.session);
+
+													setLike(prev => !prev);
+												} catch (error) {}
+											}}
 										/>
 									</div>
 								)}
@@ -150,7 +181,7 @@ const Scroll = () => {
 								transition={{
 									type: "spring",
 									bounce: 0.6,
-									duration: 3,
+									duration: 1.5,
 								}}
 								onAnimationComplete={() => {
 									updateStore({
@@ -164,6 +195,7 @@ const Scroll = () => {
 									alt="Scroll Closed"
 									fill
 									className="object-contain object-top"
+									draggable="false"
 								/>
 							</motion.div>
 						)}

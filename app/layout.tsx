@@ -1,4 +1,3 @@
-import { domain } from "@/config";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -7,16 +6,18 @@ export const metadata: Metadata = {
 	description: "Continue the story",
 };
 
+const { DOMAIN } = process.env;
+
 const frame = {
 	version: "next",
-	imageUrl: `https://${domain}/images/frame/ogimage.png`,
+	imageUrl: `https://${DOMAIN}/images/frame/ogimage.png`,
 	button: {
 		title: "✍️",
 		action: {
 			type: "launch_frame",
-			url: `https://${domain}`,
+			url: `https://${DOMAIN}`,
 			name: "Continue the story",
-			splashImageUrl: `https://${domain}/images/frame/logo.png`,
+			splashImageUrl: `https://${DOMAIN}/images/frame/logo.png`,
 			splashBackgroundColor: "#a67443",
 		},
 	},

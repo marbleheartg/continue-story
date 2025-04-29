@@ -1,17 +1,16 @@
-import { MyStore } from "@/types";
 import { create } from "zustand";
+import { StoreData } from "./types";
 
-export const store = create<MyStore>(set => ({
-	newStoryPart: {
+export const store = create<StoreData>(set => ({
+	storyPart: {
 		text: "",
-		createdAt: new Date(),
 	},
 	rules: {
 		enabled: false,
 		text: `Write one sentence to spark a fun short story — the more creative, the better! Each like the authors get earns them 1 point. The story is limited to 5 sentences. Let’s have fun! ♡`,
 	},
 	scrollOpen: true,
-	scrollVisible: true,
+	scrollVisible: false,
 
 	updateStore: newState =>
 		set(prev =>
