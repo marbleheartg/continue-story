@@ -6,12 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
 	try {
-		const {
-			message,
-			signature,
-			nonce,
-		}: { message: string; signature: `0x${string}`; nonce: string } =
-			await req.json();
+		const { message, signature, nonce } = await req.json();
 
 		const appClient = createAppClient({
 			relay: "https://relay.farcaster.xyz",
@@ -26,7 +21,7 @@ export async function POST(req: NextRequest) {
 				domain: process.env.DOMAIN!,
 			});
 
-		if (!success) throw new Error("verifySignInMessage");
+		if (!success) throw new Error("Unsuccessful verification");
 
 		const user = await users.findOne({ fid });
 

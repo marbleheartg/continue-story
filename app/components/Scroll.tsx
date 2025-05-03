@@ -16,10 +16,10 @@ const poorStory = Poor_Story({
 });
 
 const Scroll = () => {
-	const { user, story, rules, storyPart, scrollOpen, scrollVisible, muted } =
+	const { user, story, storyPart, rules, scrollOpen, scrollVisible, muted } =
 		store();
 
-	const [like, setLike] = useState(story?.likes.some(val => val == user?.fid)!);
+	const [like, setLike] = useState(story?.likes.some(val => val == user?.fid));
 
 	const [suggestion, setSuggestion] = useState<string>(
 		begin[Math.floor(Math.random() * begin.length)]
@@ -44,7 +44,6 @@ const Scroll = () => {
 
 			updateStore({
 				story,
-				storyPart: { text: "" },
 			});
 		}
 
@@ -103,27 +102,25 @@ const Scroll = () => {
 												<span>
 													{story?.parts.map(part => part.text).join("")}{" "}
 												</span>
-												<span
-													className={`${storyPart?.text ? "" : "opacity-30"}`}
-												>
-													{storyPart?.text || suggestion}
+												<span className={`${storyPart ? "" : "opacity-30"}`}>
+													{storyPart || suggestion}
 												</span>
 												<span>{" _ "}</span>
 												<span
 													className={`inline-block blink ${
-														storyPart.text.length < 15
+														storyPart.length < 15
 															? "text-red-900"
 															: "text-green-900"
 													}`}
 												>
-													{30 - storyPart.text.length}
+													{30 - storyPart.length}
 												</span>
 											</span>
 										))}
 
 									<textarea
 										ref={inputRef}
-										value={storyPart?.text}
+										value={storyPart}
 										onKeyDown={e => {
 											if (!muted) playPen(penSoundRef, e);
 										}}
@@ -133,11 +130,7 @@ const Scroll = () => {
 
 											if (l >= 31 || v.endsWith("  ")) return;
 
-											updateStore({
-												storyPart: {
-													text: v,
-												},
-											});
+											updateStore({ storyPart: v });
 										}}
 										className="max-w-full focus:outline-none placeholder-black opacity-0 w-0 h-0"
 										spellCheck={false}
@@ -187,7 +180,7 @@ const Scroll = () => {
 
 														await updateStore({
 															story,
-															storyPart: { text: "" },
+															storyPart: "",
 														});
 													} catch (error) {
 														console.error("Story reloading error");
@@ -199,10 +192,7 @@ const Scroll = () => {
 											/>
 											<Image
 												className={`cursor-pointer object-contain ${
-													(user?.fid && story?.likes.includes(user?.fid)) ||
-													like
-														? "opacity-80"
-														: "opacity-50"
+													like ? "opacity-80" : "opacity-50"
 												}`}
 												src="/images/like.png"
 												alt="like"
@@ -210,18 +200,19 @@ const Scroll = () => {
 												height={42}
 												draggable="false"
 												onClick={async () => {
+													if (!story?.parts.length) return;
+
 													try {
+														setLike(prev => !prev);
+
 														const { story, user } = store.getState();
 
 														if (story?.uuid && user?.session) {
-															await likeStory(
-																story?.uuid,
-																!like,
-																user?.session
-															);
-															setLike(prev => !prev);
+															await likeStory(story?.uuid, user?.session);
 														} else throw new Error("Not enough data to like");
-													} catch (error) {}
+													} catch (error) {
+														setLike(prev => !prev);
+													}
 												}}
 											/>
 										</div>

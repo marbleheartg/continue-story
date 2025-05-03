@@ -27,14 +27,17 @@ const Button = () => {
 				updateStore(prev => ({
 					rules: { ...prev.rules, enabled: false },
 				}));
-			} else {
+			} else if (storyPart) {
 				if (story?.uuid && user?.session)
-					await postStory(story?.uuid, storyPart.text, user?.session);
+					await postStory(story?.uuid, storyPart, user?.session);
 				else throw new Error("Not enough data");
 
 				const { story: newStory } = await getStory();
 
-				updateStore({ story: newStory, storyPart: { text: "" } });
+				updateStore({
+					story: newStory,
+					storyPart: "",
+				});
 			}
 		} catch (error) {
 		} finally {

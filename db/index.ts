@@ -1,4 +1,4 @@
-import { Story, User } from "@/types";
+import { Story, User } from "@/store/types";
 import { MongoClient } from "mongodb";
 
 const { MONGODB_URI } = process.env;
@@ -7,8 +7,19 @@ if (!MONGODB_URI) throw new Error("No MONGODB_URI");
 export const client = new MongoClient(MONGODB_URI);
 await client.connect();
 
+type DatabaseFields = {
+	uuid: string;
+	createdAt: Date;
+};
+
 export const db = client.db("main");
 
-export const users = db.collection<User>("users");
-export const stories = db.collection<Story>("stories");
-export const completedStories = db.collection<Story>("completedStories");
+export const users = db.collection<
+	Omit<User, "session"> & DatabaseFields & { lastLogged: Date }
+>("users");
+
+export const stories = db.collection<Story & DatabaseFields>("stories");
+
+export const completedStories = db.collection<Story & DatabaseFields>(
+	"completedStories"
+);

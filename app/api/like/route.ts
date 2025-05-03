@@ -5,11 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
 	try {
-		const {
-			uuid,
-			like,
-			session,
-		}: { uuid: string; like: boolean; session: string } = await req.json();
+		const { uuid, session } = await req.json();
 
 		const { fid } = verifySession(session);
 
@@ -18,15 +14,9 @@ export async function POST(req: NextRequest) {
 
 		if (story.likes.length >= 5) throw new Error("Likes limit");
 
-		if (like && story.likes.some(val => val == fid))
-			throw new Error("Already liked");
-
-		if (!like && !story.likes.some(val => val == fid))
-			throw new Error("Already not liked");
-
 		await stories.updateOne(
 			{ uuid },
-			like
+			!story.likes.some(val => val == fid)
 				? {
 						$push: {
 							likes: fid,
