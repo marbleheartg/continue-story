@@ -1,7 +1,7 @@
 import { RefObject } from "react";
 
 export function initPen(penSoundRef: RefObject<HTMLAudioElement | null>) {
-	penSoundRef.current = new Audio("/sounds/pen.wav");
+	penSoundRef.current = new Audio("/sounds/pen.mp3");
 }
 
 export function playPen(

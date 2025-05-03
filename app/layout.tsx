@@ -10,15 +10,15 @@ const { DOMAIN } = process.env;
 
 const frame = {
 	version: "next",
-	imageUrl: `https://${DOMAIN}/images/frame/ogimage.png`,
+	imageUrl: `https://${DOMAIN}/images/ogimage.png`,
 	button: {
 		title: "✍️",
 		action: {
 			type: "launch_frame",
 			url: `https://${DOMAIN}`,
 			name: "Continue the story",
-			splashImageUrl: `https://${DOMAIN}/images/frame/logo.png`,
-			splashBackgroundColor: "#a67443",
+			splashImageUrl: `https://${DOMAIN}/images/logo.png`,
+			splashBackgroundColor: "#171020",
 		},
 	},
 };
@@ -32,6 +32,7 @@ export default function RootLayout({
 		<html lang="en">
 			<head>
 				<meta name="fc:frame" content={JSON.stringify(frame)} />
+				<link rel="icon" href="/images/logo.png" type="image/png" />
 			</head>
 			<body className="antialiased">{children}</body>
 		</html>

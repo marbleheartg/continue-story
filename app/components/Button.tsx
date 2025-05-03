@@ -1,16 +1,24 @@
 import getStory from "@/lib/api/getStory";
 import postStory from "@/lib/api/postStory";
+import { initScroll } from "@/lib/audio/scroll";
 import { store, updateStore } from "@/store";
 import { delay } from "@/utils/delay";
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 
 const Button = () => {
-	const { rules, scrollOpen } = store();
+	const { rules, scrollOpen, muted } = store();
 
-	const isDisabled = !scrollOpen;
+	const scrollSoundRef = useRef<HTMLAudioElement | null>(null);
+
+	useEffect(() => {
+		initScroll(scrollSoundRef);
+	}, []);
 
 	async function handleClick() {
 		const { user, story, storyPart } = store.getState();
+
+		if (!muted) scrollSoundRef?.current?.play().catch(console.warn);
 
 		updateStore({ scrollOpen: false });
 
@@ -26,23 +34,23 @@ const Button = () => {
 
 				const { story: newStory } = await getStory();
 
-				updateStore({ story: newStory });
+				updateStore({ story: newStory, storyPart: { text: "" } });
 			}
 		} catch (error) {
 		} finally {
-			await delay(1500);
+			await delay(2000);
 			updateStore({ scrollOpen: true });
 		}
 	}
 
 	return (
-		<div className="fixed bottom-13 left-0 right-0 w-full flex justify-center pointer-events-auto">
+		<div className="fixed bottom-15 left-5 right-5">
 			<button
-				className={`flex justify-center w-11/12 py-2.5 rounded-3xl transition-[background-color,opacity] duration-300 cursor-pointer ${
-					isDisabled ? "bg-gray-300" : "bg-white"
+				className={`flex justify-center w-full py-2.5 rounded-3xl transition-[background-color,opacity] duration-300 cursor-pointer ${
+					!scrollOpen ? "bg-gray-300" : "bg-white"
 				}`}
 				onClick={handleClick}
-				disabled={isDisabled}
+				disabled={!scrollOpen}
 			>
 				{rules.enabled ? (
 					<Image src="/images/arrow.png" alt="arrow" width={32} height={32} />

@@ -3,16 +3,17 @@ import { AccountLocation } from "@farcaster/frame-core/dist/context";
 type DatabaseFields = {
 	uuid?: string;
 	createdAt?: Date;
+	lastLogged?: Date;
 };
 
 export type User = {
+	session?: string;
 	fid?: number;
 	username?: string;
 	displayName?: string;
 	pfpUrl?: string;
 	location?: AccountLocation;
-	session?: string;
-} & DatabaseFields & { lastLogged?: Date };
+} & DatabaseFields;
 
 export type StoryPart = {
 	fid?: number;

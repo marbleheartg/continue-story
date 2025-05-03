@@ -1,8 +1,10 @@
+import { initScroll } from "@/lib/audio/scroll";
 import { store, updateStore } from "@/store";
 import { delay } from "@/utils/delay";
 import sdk from "@farcaster/frame-sdk";
 import { Spicy_Rice } from "next/font/google";
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 
 const spicyRice = Spicy_Rice({
 	subsets: ["latin", "latin-ext"],
@@ -10,15 +12,23 @@ const spicyRice = Spicy_Rice({
 });
 
 const Header = () => {
-	const { user } = store();
+	const { user, muted } = store();
+
+	const scrollSoundRef = useRef<HTMLAudioElement | null>(null);
+
+	useEffect(() => {
+		initScroll(scrollSoundRef);
+	}, []);
 
 	return (
 		<header>
 			<button
 				type="button"
-				className="fixed top-13 left-4 flex items-center justify-center h-8.5 w-8.5 rounded-full bg-white/20 backdrop-blur-sm cursor-pointer"
+				className="fixed top-13 left-5 flex items-center justify-center h-8.5 w-8.5 rounded-full bg-white/20 backdrop-blur-sm cursor-pointer"
 				onClick={async () => {
 					try {
+						if (!muted) scrollSoundRef?.current?.play().catch(console.warn);
+
 						updateStore({ scrollOpen: false });
 
 						updateStore(prev => ({
@@ -26,7 +36,7 @@ const Header = () => {
 						}));
 					} catch (error) {
 					} finally {
-						await delay(1500);
+						await delay(2000);
 						updateStore({ scrollOpen: true });
 					}
 				}}
@@ -50,7 +60,7 @@ const Header = () => {
 
 			<button
 				type="button"
-				className="fixed top-13 right-4 h-9 w-9"
+				className="fixed top-13 right-5 h-9 w-9"
 				onClick={async () => {
 					const fid = store.getState().user?.fid;
 

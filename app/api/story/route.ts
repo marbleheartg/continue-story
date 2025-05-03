@@ -9,7 +9,7 @@ export async function GET() {
 
 	let story;
 
-	if (chance < 0.5) {
+	if (chance < 0.3) {
 		story = {
 			uuid: randomUUID(),
 			parts: [],
@@ -65,10 +65,18 @@ export async function POST(req: NextRequest) {
 
 		const story = await stories.findOne({ uuid });
 
+		let formattedText = text.trimEnd();
+
+		if (formattedText.at(-1) == ".") {
+			formattedText += " ";
+		} else {
+			formattedText += ". ";
+		}
+
 		const newStoryPart = {
 			uuid: randomUUID(),
 			fid,
-			text: text.trimEnd(),
+			text: formattedText,
 			createdAt: new Date(),
 		};
 

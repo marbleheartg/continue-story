@@ -10,11 +10,7 @@ import Header from "./components/Header";
 import Scroll from "./components/Scroll";
 
 export default function Home() {
-	// const bgSoundRef = useRef<HTMLAudioElement | null>(null);
-
 	useEffect(() => {
-		// startAudio(bgSoundRef);
-
 		init();
 	}, []);
 
@@ -55,6 +51,6 @@ async function init() {
 		}));
 	} catch (error) {
 		console.error(error);
-		await init();
+		await sdk.actions.close();
 	}
 }

@@ -7,10 +7,11 @@ export const store = create<StoreData>(set => ({
 	},
 	rules: {
 		enabled: false,
-		text: `Write one sentence to spark a fun short story — the more creative, the better! Each like the authors get earns them 1 point. The story is limited to 5 sentences. Let’s have fun! ♡`,
+		text: `Write one sentence to spark a fun short story — the more creative, the better! The story is limited to 5 sentences. Let’s have fun! ♡`,
 	},
 	scrollOpen: true,
 	scrollVisible: false,
+	muted: false,
 
 	updateStore: newState =>
 		set(prev =>

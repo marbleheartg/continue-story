@@ -7,6 +7,7 @@ export type StoreData = {
 	rules: { enabled: boolean; text: string };
 	scrollOpen: boolean;
 	scrollVisible: boolean;
+	muted: boolean;
 	updateStore: (
 		newState: Partial<StoreData> | ((prev: StoreData) => Partial<StoreData>)
 	) => void;

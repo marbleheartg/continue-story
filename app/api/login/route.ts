@@ -28,20 +28,17 @@ export async function POST(req: NextRequest) {
 
 		if (!success) throw new Error("verifySignInMessage");
 
-		const user = await users.findOne({ fid: fid.toString() });
+		const user = await users.findOne({ fid });
 
 		if (!user)
 			await users.insertOne({
 				uuid: randomUUID(),
-				fid: fid.toString(),
+				fid,
 				lastLogged: new Date(),
 				createdAt: new Date(),
 			});
 		else {
-			await users.updateOne(
-				{ fid: fid.toString() },
-				{ $set: { lastLogged: new Date() } }
-			);
+			await users.updateOne({ fid }, { $set: { lastLogged: new Date() } });
 		}
 
 		const payload = {
