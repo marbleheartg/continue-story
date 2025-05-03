@@ -1,4 +1,10 @@
 {
+	"accountAssociation": {
+		"header": "eyJmaWQiOjEwMjEyMTQsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwZjI2NWYxNUMzQUEyNmFDZkQ1QTZkNDBlQzBBMjBmNTE2NTZDYWQ1In0",
+		"payload": "eyJkb21haW4iOiJjb250aW51ZXN0b3J5LmZ1biJ9",
+		"signature": "MHhmZDgxOTZiZDk3NTY1M2IwNzFlODNhOWU4NDliNzU2Y2NhOWQ1MDc3NDliNTU1NTUzNmYxY2U4YWMzM2IyNjc2MWUxNGE3YzAyY2ZhZThlNDFjNjdhZDM3NWExYWNmNTNmOTU3YWYzZjhkODgwMjY3ZjZhMmU5NzQzNjYyZjc0MTFi"
+	},
+
 	"frame": {
 		"version": "1",
 		"name": "Continue the Story",
