@@ -3,10 +3,6 @@ import { UserContext } from "@farcaster/frame-core/dist/context";
 type fid = number;
 type StoryPart = string;
 
-export type User = UserContext & {
-	session: string;
-};
-
 export type Story = {
 	uuid: string;
 	parts: {
@@ -17,7 +13,8 @@ export type Story = {
 };
 
 export type StoreData = {
-	user?: User;
+	session?: string;
+	user?: UserContext;
 	story?: Story;
 	storyPart: StoryPart;
 	rules: { enabled: boolean; text: string };

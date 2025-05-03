@@ -1,0 +1,18 @@
+{
+	"frame": {
+		"version": "1",
+		"name": "Continue the Story",
+		"iconUrl": "https://continuestory.fun/images/logo.png",
+		"homeUrl": "https://continuestory.fun",
+		"splashImageUrl": "https://continuestory.fun/images/logo.png",
+		"splashBackgroundColor": "#171020",
+		"subtitle": "Spark a fun short story!",
+		"description": "5 authors, 5 sentences, make it funny!",
+		"primaryCategory": "games",
+		"tags": ["words", "game", "story", "fun", "joke"],
+		"tagline": "Spark a fun short story!",
+		"ogTitle": "Continue the Story",
+		"ogDescription": "5 authors, 5 sentences, make it funny!",
+		"ogImageUrl": "https://continuestory.fun/images/ogimage.png"
+	}
+}

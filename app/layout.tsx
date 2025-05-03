@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-	title: "Continue the story",
-	description: "Continue the story",
+	title: "Continue the Story",
+	description: "Continue the Story",
 };
 
 const { DOMAIN } = process.env;
@@ -16,7 +16,7 @@ const frame = {
 		action: {
 			type: "launch_frame",
 			url: `https://${DOMAIN}`,
-			name: "Continue the story",
+			name: "Continue the Story",
 			splashImageUrl: `https://${DOMAIN}/images/logo.png`,
 			splashBackgroundColor: "#171020",
 		},

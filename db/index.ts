@@ -1,4 +1,5 @@
-import { Story, User } from "@/store/types";
+import { Story } from "@/store/types";
+import { UserContext } from "@farcaster/frame-core/dist/context";
 import { MongoClient } from "mongodb";
 
 const { MONGODB_URI } = process.env;
@@ -15,7 +16,7 @@ type DatabaseFields = {
 export const db = client.db("main");
 
 export const users = db.collection<
-	Omit<User, "session"> & DatabaseFields & { lastLogged: Date }
+	UserContext & DatabaseFields & { lastLogged: Date }
 >("users");
 
 export const stories = db.collection<Story & DatabaseFields>("stories");

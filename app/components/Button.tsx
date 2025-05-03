@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 const Button = () => {
-	const { rules, scrollOpen, muted } = store();
+	const { session, rules, scrollOpen, muted } = store();
 
 	const scrollSoundRef = useRef<HTMLAudioElement | null>(null);
 
@@ -28,8 +28,8 @@ const Button = () => {
 					rules: { ...prev.rules, enabled: false },
 				}));
 			} else if (storyPart) {
-				if (story?.uuid && user?.session)
-					await postStory(story?.uuid, storyPart, user?.session);
+				if (story?.uuid && session)
+					await postStory(story?.uuid, storyPart, session);
 				else throw new Error("Not enough data");
 
 				const { story: newStory } = await getStory();

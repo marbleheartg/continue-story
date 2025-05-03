@@ -28,6 +28,10 @@ export default function Home() {
 async function init() {
 	const context = await sdk.context;
 
+	updateStore({
+		user: context.user,
+	});
+
 	const nonce = generateNonce();
 
 	await sdk.actions.ready({ disableNativeGestures: true });
@@ -40,10 +44,7 @@ async function init() {
 		const { session } = await login(message, signature, nonce);
 
 		updateStore({
-			user: {
-				...context.user,
-				session,
-			},
+			session,
 		});
 	} catch (error) {
 		console.error(error);
