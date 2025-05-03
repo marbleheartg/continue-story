@@ -213,20 +213,15 @@ const Scroll = () => {
 													try {
 														const { story, user } = store.getState();
 
-														const curLike = like;
-
-														setLike(prev => !prev);
-
-														if (story?.uuid && user?.session)
+														if (story?.uuid && user?.session) {
 															await likeStory(
 																story?.uuid,
-																!curLike,
+																!like,
 																user?.session
 															);
-														else throw new Error("Not enough data to like");
-													} catch (error) {
-														setLike(prev => !prev);
-													}
+															setLike(prev => !prev);
+														} else throw new Error("Not enough data to like");
+													} catch (error) {}
 												}}
 											/>
 										</div>
