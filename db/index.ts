@@ -16,7 +16,8 @@ type DatabaseFields = {
 export const db = client.db("main");
 
 export const users = db.collection<
-	UserContext & DatabaseFields & { lastLogged: Date }
+	UserContext &
+		DatabaseFields & { notificationToken?: string; lastLogged: Date }
 >("users");
 
 export const stories = db.collection<Story & DatabaseFields>("stories");

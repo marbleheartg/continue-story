@@ -1,10 +1,8 @@
 import axios from "axios";
 
-export default async function likeStory(uuid: string, session: string) {
+export default async function likeStory(session: string, uuid: string) {
 	try {
-		const { data } = await axios.post("/api/like", { uuid, session });
-
-		return data;
+		await axios.post("/api/like", { session, uuid });
 	} catch (error: any) {
 		throw new Error(error.response?.data?.message);
 	}

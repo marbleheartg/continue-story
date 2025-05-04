@@ -19,6 +19,7 @@
 		"tagline": "Spark a fun short story!",
 		"ogTitle": "Continue the Story",
 		"ogDescription": "5 authors, 5 sentences, make it funny!",
-		"ogImageUrl": "https://continuestory.fun/images/ogimage.png"
+		"ogImageUrl": "https://continuestory.fun/images/ogimage.png",
+		"webhookUrl": "https://continuestory.fun/api/webhook"
 	}
 }

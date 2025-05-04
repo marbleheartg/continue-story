@@ -28,7 +28,6 @@ const Scroll = () => {
 	} = store();
 
 	const [like, setLike] = useState(story?.likes.some(val => val == user?.fid));
-
 	const [suggestion, setSuggestion] = useState<string>(
 		begin[Math.floor(Math.random() * begin.length)]
 	);

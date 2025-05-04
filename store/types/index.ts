@@ -1,4 +1,4 @@
-import { UserContext } from "@farcaster/frame-core/dist/context";
+import { ClientContext, UserContext } from "@farcaster/frame-core/dist/context";
 
 type fid = number;
 type StoryPart = string;
@@ -15,6 +15,7 @@ export type Story = {
 export type StoreData = {
 	session?: string;
 	user?: UserContext;
+	client?: ClientContext;
 	story?: Story;
 	storyPart: StoryPart;
 	rules: { enabled: boolean; text: string };
