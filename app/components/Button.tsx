@@ -57,7 +57,7 @@ const Button = () => {
 	return (
 		<div className="fixed bottom-15 left-5 right-5">
 			<button
-				className={`flex justify-center w-full py-2.5 rounded-3xl transition-[background-color,opacity] duration-300 cursor-pointer ${
+				className={`flex justify-center w-full max-w-xl mx-auto py-2.5 rounded-3xl transition-[background-color,opacity] duration-300 cursor-pointer ${
 					!scrollOpen || storyPart.length < 15 ? "bg-gray-300" : "bg-white"
 				}`}
 				onClick={handleClick}
