@@ -2,7 +2,7 @@
 
 import webhook from "@/lib/api/webhook";
 import { login } from "@/lib/auth/login";
-import { store, updateStore } from "@/store";
+import { updateStore } from "@/store";
 import { generateNonce } from "@farcaster/auth-client";
 import sdk from "@farcaster/frame-sdk";
 import { useEffect } from "react";
@@ -37,10 +37,8 @@ async function init() {
 	}
 
 	sdk.on("frameAdded", async ({ notificationDetails }) => {
-		const session = store.getState().session;
-
-		if (session && notificationDetails?.token) {
-			await webhook(session, notificationDetails.token);
+		if (notificationDetails?.token) {
+			await webhook(notificationDetails.token);
 		}
 	});
 

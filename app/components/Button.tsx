@@ -19,7 +19,7 @@ const Button = () => {
 	}, []);
 
 	async function handleClick() {
-		const { client, session, muted, story, storyPart } = store.getState();
+		const { client, muted, story, storyPart } = store.getState();
 
 		if (counter < 4) setCounter(prev => prev + 1);
 
@@ -36,8 +36,7 @@ const Button = () => {
 					rules: { ...prev.rules, enabled: false },
 				}));
 			} else if (storyPart) {
-				if (story?.uuid && session)
-					await postStory(story?.uuid, storyPart, session);
+				if (story?.uuid) await postStory(story?.uuid, storyPart);
 				else throw new Error("Not enough data");
 
 				const { story: newStory } = await getStory();

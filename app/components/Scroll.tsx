@@ -17,7 +17,7 @@ const poorStory = Poor_Story({
 
 const Scroll = () => {
 	const {
-		session,
+
 		user,
 		story,
 		storyPart,
@@ -212,10 +212,10 @@ const Scroll = () => {
 													try {
 														setLike(prev => !prev);
 
-														const { story, user } = store.getState();
+														const { story, } = store.getState();
 
-														if (story?.uuid && session) {
-															await likeStory(story?.uuid, session);
+														if (story?.uuid ) {
+															await likeStory(story?.uuid);
 														} else throw new Error("Not enough data to like");
 													} catch (error) {
 														setLike(prev => !prev);
