@@ -10,6 +10,8 @@ import { useEffect, useRef, useState } from "react";
 const Button = () => {
 	const { storyPart, rules, scrollOpen } = store();
 
+	const disabled = !rules.enabled && (!scrollOpen || storyPart.length < 15);
+
 	const scrollSoundRef = useRef<HTMLAudioElement | null>(null);
 
 	const [counter, setCounter] = useState(0);
@@ -57,10 +59,10 @@ const Button = () => {
 		<div className="fixed bottom-15 left-5 right-5">
 			<button
 				className={`flex justify-center w-full max-w-xl mx-auto py-2.5 rounded-3xl transition-[background-color,opacity] duration-300 cursor-pointer ${
-					!scrollOpen || storyPart.length < 15 ? "bg-gray-300" : "bg-white"
+					disabled ? "bg-gray-300" : "bg-white"
 				}`}
 				onClick={handleClick}
-				disabled={!scrollOpen || storyPart.length < 15}
+				disabled={disabled}
 			>
 				{rules.enabled ? (
 					<Image src="/images/arrow.png" alt="arrow" width={32} height={32} />
