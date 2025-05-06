@@ -4,8 +4,8 @@ import { StoreData } from "./types";
 export const store = create<StoreData>(set => ({
 	storyPart: "",
 	rules: {
-		enabled: false,
-		text: `Write one sentence to spark a fun short story — the more creative, the better! The story is limited to 5 sentences. Let’s have fun! ♡`,
+		enabled: true,
+		text: `Write one sentence to spark a fun short story — the more creative, the better! The stories are limited to 5 sentences. One sentence — one author. Let’s have fun! ♡`,
 	},
 	scrollOpen: true,
 	scrollVisible: false,
