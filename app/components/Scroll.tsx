@@ -29,7 +29,7 @@ const Scroll = () => {
     setLike(story?.likes.some(val => val == user?.fid)!)
   }, [story])
 
-  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const bgSoundRef = useRef<HTMLAudioElement | null>(null)
   const penSoundRef = useRef<HTMLAudioElement | null>(null)
   const scrollSoundRef = useRef<HTMLAudioElement | null>(null)
@@ -80,7 +80,7 @@ const Scroll = () => {
                 <Image src="/images/scroll.png" alt="Scroll Open" fill draggable="false" />
 
                 <div
-                  className={`absolute z-10 top-25 left-9 max-w-[80%] text-2xl leading-9 -rotate-1 ${poorStory.className} overflow-hidden`}
+                  className={`absolute z-10 top-25 left-9 max-w-[80%] text-2xl leading-9 ${poorStory.className} overflow-hidden`}
                   onClick={() => inputRef.current?.focus()}
                 >
                   {story?.parts &&
@@ -91,7 +91,10 @@ const Scroll = () => {
                     ) : (
                       <span>
                         <span>{story?.parts.map(part => part.text).join("")} </span>
-                        <span className={`${storyPart ? "" : "opacity-30"}`}>{storyPart || suggestion}</span>
+
+                        <span className={`${storyPart ? "" : "opacity-30"}`} dir="ltr">
+                          {storyPart || suggestion}
+                        </span>
                         <span>{" _ "}</span>
                         <span className={`inline-block blink ${storyPart.length < 15 ? "text-red-900" : "text-green-900"}`}>
                           {30 - storyPart.length}
@@ -99,11 +102,22 @@ const Scroll = () => {
                       </span>
                     ))}
 
-                  <textarea
+                  <input
                     ref={inputRef}
                     value={storyPart}
                     onKeyDown={e => {
-                      if (!muted) playPen(penSoundRef, e)
+                      const key = e.key
+
+                      if (storyPart.length && key === "Backspace")
+                        return updateStore(prev => ({ storyPart: prev.storyPart.slice(0, -1) }))
+
+                      if (/[A-Za-z0-9 ]/.test(key)) {
+                        if (storyPart.length >= 31 || (storyPart.at(-1) === " " && key === " ")) return
+
+                        if (!muted) playPen(penSoundRef, e)
+
+                        updateStore(prev => ({ storyPart: prev.storyPart + key }))
+                      }
                     }}
                     onChange={e => {
                       const v = e.target.value
@@ -113,10 +127,11 @@ const Scroll = () => {
 
                       updateStore({ storyPart: v })
                     }}
-                    className="max-w-full focus:outline-none placeholder-black opacity-0 w-0 h-0"
+                    className="max-w-full focus:outline-none placeholder-black opacity-0 w-0 h-0 "
                     spellCheck={false}
                     autoCorrect="off"
                     autoCapitalize="off"
+                    dir="ltr"
                   />
                 </div>
 
