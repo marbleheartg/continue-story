@@ -105,27 +105,23 @@ const Scroll = () => {
                   <input
                     ref={inputRef}
                     value={storyPart}
-                    onKeyDown={e => {
-                      const key = e.key
+                    onBeforeInput={(e: any) => {
+                      const key = e.data
 
-                      if (storyPart.length && key === "Backspace")
+                      if (storyPart.length && e.inputType === "deleteContentBackward")
                         return updateStore(prev => ({ storyPart: prev.storyPart.slice(0, -1) }))
 
-                      if (/[A-Za-z0-9 ]/.test(key)) {
-                        if (storyPart.length >= 31 || (storyPart.at(-1) === " " && key === " ")) return
+                      if (/[a-zA-Z0-9 .,!?'"\-:;()]/.test(key) || /\p{Emoji}/u.test(key)) {
+                        if (storyPart.length >= 30 || (storyPart.at(-1) === " " && key === " ")) return
 
                         if (!muted) playPen(penSoundRef, e)
 
                         updateStore(prev => ({ storyPart: prev.storyPart + key }))
                       }
                     }}
-                    onChange={e => {
-                      const v = e.target.value
-                      const l = v.length
-
-                      if (l >= 31 || v.endsWith("  ")) return
-
-                      updateStore({ storyPart: v })
+                    onKeyDown={e => {
+                      if (storyPart.length && e.key === "Backspace")
+                        return updateStore(prev => ({ storyPart: prev.storyPart.slice(0, -1) }))
                     }}
                     className="max-w-full focus:outline-none placeholder-black opacity-0 w-0 h-0 "
                     spellCheck={false}
