@@ -96,13 +96,16 @@ const Scroll = () => {
                           {storyPart || suggestion}
                         </span>
                         <span>{" _ "}</span>
-                        <span className={`inline-block blink ${storyPart.length < 15 ? "text-red-900" : "text-green-900"}`}>
+                        <span
+                          className={`inline-block blink ${storyPart.length < 15 ? "text-red-900" : "text-green-900"}`}
+                        >
                           {30 - storyPart.length}
                         </span>
                       </span>
                     ))}
 
                   <input
+                    onChange={() => {}}
                     ref={inputRef}
                     value={storyPart}
                     onBeforeInput={(e: any) => {
