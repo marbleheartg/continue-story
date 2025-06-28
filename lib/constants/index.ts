@@ -1,6 +1,6 @@
 const PROJECT_TITLE = "continue story"
 
-const PROJECT_DESCRIPTION = "continue story"
+const PROJECT_DESCRIPTION = "spark a fun short story"
 
 const FRAME = {
   version: "next",
