@@ -1,10 +1,10 @@
-import getStory from "@/lib/api/getStory"
-import likeStory from "@/lib/api/likeStory"
+import axiosInstance from "@/lib/api/config"
+import delay from "@/lib/api/utils/delay"
 import { startAudio } from "@/lib/audio/background"
 import { initPen, playPen } from "@/lib/audio/pen"
 import { initScroll } from "@/lib/audio/scroll"
 import { store, updateStore } from "@/store"
-import { delay } from "@/utils/delay"
+import axios from "axios"
 import { AnimatePresence, motion } from "framer-motion"
 import { Poor_Story } from "next/font/google"
 import Image from "next/image"
@@ -36,7 +36,7 @@ const Scroll = () => {
 
   useEffect(() => {
     async function init() {
-      const { story } = await getStory()
+      const { story } = await axios.get("/api/story").then(res => res.data)
 
       updateStore({
         story,
@@ -168,7 +168,7 @@ const Scroll = () => {
 
                             updateStore({ scrollOpen: false })
 
-                            const { story } = await getStory()
+                            const { story } = await axios.get("/api/story").then(res => res.data)
 
                             await updateStore({
                               story,
@@ -198,7 +198,7 @@ const Scroll = () => {
                             const { story } = store.getState()
 
                             if (story?.uuid) {
-                              await likeStory(story?.uuid)
+                              await axiosInstance.post("/api/like", { uuid: story?.uuid }).then(res => res.data)
                             } else throw new Error("Not enough data to like")
                           } catch (error) {
                             setLike(prev => !prev)

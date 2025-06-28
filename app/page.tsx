@@ -1,57 +1,35 @@
 "use client"
 
-import webhook from "@/lib/api/webhook"
-import { login } from "@/lib/auth/login"
+import axiosInstance from "@/lib/api/config"
+import clientErrorHandling from "@/lib/clientErrorsReporting"
 import { updateStore } from "@/store"
-import { generateNonce } from "@farcaster/auth-client"
 import sdk from "@farcaster/frame-sdk"
 import { useEffect } from "react"
 import Button from "./components/Button"
 import Header from "./components/Header"
 import Scroll from "./components/Scroll"
 
-async function init() {
-  const { user, client } = await sdk.context
-
-  updateStore({
-    user,
-    client,
-  })
-
-  const nonce = generateNonce()
-
-  await sdk.actions.ready({ disableNativeGestures: true })
-
-  try {
-    const { message, signature } = await sdk.actions.signIn({
-      nonce,
-    })
-
-    console.log(message, signature, nonce)
-
-    const { session } = await login(message, signature, nonce)
-
-    updateStore({
-      session,
-    })
-  } catch (error) {
-    await sdk.actions.close()
-  }
-
-  sdk.on("frameAdded", async ({ notificationDetails }) => {
-    if (notificationDetails?.token) {
-      await webhook(notificationDetails.token)
-    }
-  })
-
-  return () => {
-    sdk.removeAllListeners()
-  }
-}
-
 export default function Home() {
   useEffect(() => {
-    init()
+    ;(async function () {
+      clientErrorHandling()
+
+      const { user, client } = await sdk.context
+
+      const capabilities = await sdk.getCapabilities()
+
+      updateStore({ user, client, capabilities })
+
+      await sdk.actions.ready({ disableNativeGestures: true })
+
+      try {
+        const { token: session } = await sdk.quickAuth.getToken()
+        updateStore({ session })
+        await axiosInstance.post("/api/login").catch(() => {})
+      } catch (error) {
+        await sdk.actions.close()
+      }
+    })()
   }, [])
 
   return (

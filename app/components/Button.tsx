@@ -1,82 +1,78 @@
-import getStory from "@/lib/api/getStory";
-import postStory from "@/lib/api/postStory";
-import { initScroll } from "@/lib/audio/scroll";
-import { store, updateStore } from "@/store";
-import { delay } from "@/utils/delay";
-import sdk from "@farcaster/frame-sdk";
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import axiosInstance from "@/lib/api/config"
+import delay from "@/lib/api/utils/delay"
+import { initScroll } from "@/lib/audio/scroll"
+import { store, updateStore } from "@/store"
+import sdk from "@farcaster/frame-sdk"
+import axios from "axios"
+import Image from "next/image"
+import { useEffect, useRef, useState } from "react"
 
 const Button = () => {
-	const { storyPart, rules, scrollOpen } = store();
+  const { storyPart, rules, scrollOpen } = store()
 
-	const disabled = !rules.enabled && (!scrollOpen || storyPart.length < 15);
+  const disabled = !rules.enabled && (!scrollOpen || storyPart.length < 15)
 
-	const scrollSoundRef = useRef<HTMLAudioElement | null>(null);
+  const scrollSoundRef = useRef<HTMLAudioElement | null>(null)
 
-	const [counter, setCounter] = useState(0);
+  const [count, setCount] = useState(0)
 
-	useEffect(() => {
-		initScroll(scrollSoundRef);
-	}, []);
+  useEffect(() => {
+    initScroll(scrollSoundRef)
+  }, [])
 
-	async function handleClick() {
-		const { client, muted, story, storyPart } = store.getState();
+  async function handleClick() {
+    const { client, muted, story, storyPart } = store.getState()
 
-		if (counter < 4) setCounter(prev => prev + 1);
+    if (count < 4) setCount(prev => prev + 1)
 
-		try {
-			if (counter == 3 && !client?.added) await sdk.actions.addFrame();
-			if (!muted) scrollSoundRef?.current?.play();
-		} catch (error) {}
+    try {
+      if (count == 3 && !client?.added) await sdk.actions.addFrame()
+      if (!muted) scrollSoundRef?.current?.play()
+    } catch (error) {}
 
-		try {
-			updateStore({ scrollOpen: false });
+    try {
+      updateStore({ scrollOpen: false })
 
-			if (rules.enabled) {
-				updateStore(prev => ({
-					rules: { ...prev.rules, enabled: false },
-				}));
-			} else if (storyPart) {
-				if (story?.uuid) await postStory(story?.uuid, storyPart);
-				else throw new Error("Not enough data");
+      if (rules.enabled) {
+        updateStore(prev => ({
+          rules: { ...prev.rules, enabled: false },
+        }))
+      } else if (storyPart) {
+        if (story?.uuid)
+          await axiosInstance.post("/api/story", { uuid: story?.uuid, text: storyPart }).then(res => res.data)
+        else throw new Error("Not enough data")
 
-				const { story: newStory } = await getStory();
+        const { story: newStory } = await axios.get("/api/story").then(res => res.data)
 
-				updateStore({
-					story: newStory,
-					storyPart: "",
-				});
-			}
-		} catch (error) {
-		} finally {
-			await delay(2000);
-			updateStore({ scrollOpen: true });
-		}
-	}
+        updateStore({
+          story: newStory,
+          storyPart: "",
+        })
+      }
+    } catch (error) {
+    } finally {
+      await delay(2000)
+      updateStore({ scrollOpen: true })
+    }
+  }
 
-	return (
-		<div className="fixed bottom-15 left-5 right-5">
-			<button
-				className={`flex justify-center w-full max-w-xl mx-auto py-2.5 rounded-3xl transition-[background-color,opacity] duration-300 cursor-pointer ${
-					disabled ? "bg-gray-300" : "bg-white"
-				}`}
-				onClick={handleClick}
-				disabled={disabled}
-			>
-				{rules.enabled ? (
-					<Image src="/images/arrow.png" alt="arrow" width={32} height={32} />
-				) : (
-					<Image
-						src="/images/feather.png"
-						alt="feather"
-						width={32}
-						height={32}
-					/>
-				)}
-			</button>
-		</div>
-	);
-};
+  return (
+    <div className="fixed bottom-15 left-5 right-5">
+      <button
+        className={`flex justify-center w-full max-w-xl mx-auto py-2.5 rounded-3xl transition-[background-color,opacity] duration-300 cursor-pointer ${
+          disabled ? "bg-gray-300" : "bg-white"
+        }`}
+        onClick={handleClick}
+        disabled={disabled}
+      >
+        {rules.enabled ? (
+          <Image src="/images/arrow.png" alt="arrow" width={32} height={32} />
+        ) : (
+          <Image src="/images/feather.png" alt="feather" width={32} height={32} />
+        )}
+      </button>
+    </div>
+  )
+}
 
-export default Button;
+export default Button

@@ -1,53 +1,33 @@
-import { users } from "@/db";
-import { createAppClient, viemConnector } from "@farcaster/auth-client";
-import { randomUUID } from "crypto";
-import jwt from "jsonwebtoken";
-import { NextRequest, NextResponse } from "next/server";
+import { usersCollection } from "@/db"
+import { randomUUID } from "crypto"
+import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
-	try {
-		const { message, signature, nonce } = await req.json();
+  const fidHeader = req.headers.get("fid")
+  if (!fidHeader) throw new Error("NoFID")
 
-		const appClient = createAppClient({
-			relay: "https://relay.farcaster.xyz",
-			ethereum: viemConnector(),
-		});
+  const fid = parseInt(fidHeader)
 
-		const { data, success, fid, isError, error } =
-			await appClient.verifySignInMessage({
-				message,
-				signature,
-				nonce,
-				domain: process.env.DOMAIN!,
-			});
+  try {
+    let user = await usersCollection.findOne({ fid })
 
-		if (!success) throw new Error("Unsuccessful verification");
+    if (!user) {
+      await usersCollection.insertOne({
+        uuid: randomUUID(),
+        fid,
+        lastLogged: new Date(),
+        createdAt: new Date(),
+      })
+    } else {
+      if (!user.createdAt) await usersCollection.updateOne({ fid }, { $set: { createdAt: new Date() } })
+      await usersCollection.updateOne({ fid }, { $set: { lastLogged: new Date() } })
+    }
 
-		const user = await users.findOne({ fid });
+    user = await usersCollection.findOne({ fid })
 
-		if (!user)
-			await users.insertOne({
-				uuid: randomUUID(),
-				fid,
-				lastLogged: new Date(),
-				createdAt: new Date(),
-			});
-		else {
-			await users.updateOne({ fid }, { $set: { lastLogged: new Date() } });
-		}
-
-		const payload = {
-			fid,
-			iat: Math.floor(Date.now() / 1000),
-		};
-
-		const session = jwt.sign(payload, process.env.JWT_SECRET!, {
-			expiresIn: "1 day",
-		});
-
-		return NextResponse.json({ success: true, session });
-	} catch (err) {
-		console.error(err);
-		return new NextResponse("Internal Server Error", { status: 500 });
-	}
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error(err)
+    return new NextResponse("Internal Server Error", { status: 500 })
+  }
 }
