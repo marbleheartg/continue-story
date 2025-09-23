@@ -5,7 +5,7 @@
     "signature": "MHhmZDgxOTZiZDk3NTY1M2IwNzFlODNhOWU4NDliNzU2Y2NhOWQ1MDc3NDliNTU1NTUzNmYxY2U4YWMzM2IyNjc2MWUxNGE3YzAyY2ZhZThlNDFjNjdhZDM3NWExYWNmNTNmOTU3YWYzZjhkODgwMjY3ZjZhMmU5NzQzNjYyZjc0MTFi"
   },
 
-  "frame": {
+  "miniapp": {
     "version": "1",
     "name": "continue story",
     "iconUrl": "https://continuestory.fun/images/logo.png",
@@ -21,5 +21,8 @@
     "ogDescription": "5 authors, 5 sentences, make it funny!",
     "ogImageUrl": "https://continuestory.fun/images/ogimage.png",
     "webhookUrl": "https://continuestory.fun/api/webhook"
+  },
+  "baseBuilder": {
+    "allowedAddresses": ["0xf1f2D5C38174B0df9C9eABc909d812540a9bb51B"]
   }
 }
