@@ -1,24 +1,9 @@
-import { Story } from "@/store"
-import { UserContext } from "@farcaster/frame-core/dist/context"
-import { MongoClient } from "mongodb"
+import { createClient } from "redis"
 
-const { MONGODB_URI } = process.env
-if (!MONGODB_URI) throw new Error("No MONGODB_URI")
-
-export const client = new MongoClient(MONGODB_URI)
-await client.connect()
-
-type DatabaseFields = {
-  uuid: string
-  createdAt: Date
+if (!process.env.REDIS_URL) {
+  throw new Error("Missing REDIS_URL")
 }
 
-export const db = client.db("main")
-
-export const usersCollection = db.collection<
-  UserContext & DatabaseFields & { notificationToken?: string; lastLogged: Date; createdAt: Date }
->("users")
-
-export const stories = db.collection<Story & DatabaseFields>("stories")
-
-export const completedStories = db.collection<Story & DatabaseFields>("completedStories")
+export const redis = await createClient({ url: process.env.REDIS_URL })
+  .on("error", err => console.error("Redis Client Error", err))
+  .connect()

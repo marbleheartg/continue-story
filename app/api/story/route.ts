@@ -1,4 +1,5 @@
-import { client, completedStories, stories } from "@/db"
+import { redis } from "@/db"
+import { Story } from "@/store"
 import { randomUUID } from "crypto"
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
@@ -17,9 +18,9 @@ export async function GET(req: NextRequest) {
     }
   } else {
     try {
-      const allStories = await stories.find({}).toArray()
+      const activeStories = await redis.sMembers("stories:active")
 
-      if (!allStories.length) {
+      if (!activeStories.length) {
         story = {
           uuid: randomUUID(),
           parts: [],
@@ -27,7 +28,19 @@ export async function GET(req: NextRequest) {
           createdAt: new Date(),
         }
       } else {
-        story = allStories[Math.floor(Math.random() * allStories.length)]
+        const randomStoryUuid = activeStories[Math.floor(Math.random() * activeStories.length)]
+        const storyRaw = await redis.get(`story:${randomStoryUuid}`)
+        story = storyRaw ? JSON.parse(storyRaw) : null
+        
+        // Fallback if key is missing but in set
+        if (!story) {
+           story = {
+            uuid: randomUUID(),
+            parts: [],
+            likes: [],
+            createdAt: new Date(),
+          }
+        }
       }
     } catch (err) {
       console.error(err)
@@ -60,7 +73,8 @@ export async function POST(req: NextRequest) {
       text,
     })
 
-    const story = await stories.findOne({ uuid })
+    const storyRaw = await redis.get(`story:${uuid}`)
+    const story: Story | null = storyRaw ? JSON.parse(storyRaw) : null
 
     let formattedText = text.trimEnd()
 
@@ -78,41 +92,29 @@ export async function POST(req: NextRequest) {
     }
 
     if (!story) {
-      await stories.insertOne({
+      const newStory = {
         uuid: randomUUID(),
         parts: [newStoryPart],
         likes: [],
         createdAt: new Date(),
-      })
+      }
+      await redis.set(`story:${newStory.uuid}`, JSON.stringify(newStory))
+      await redis.sAdd("stories:active", newStory.uuid)
 
       return NextResponse.json({ success: true })
     }
 
+    const updatedStory = {
+      ...story,
+      parts: [...story.parts, newStoryPart],
+    }
+
     if (story.parts.length < 4) {
-      await stories.updateOne(
-        { uuid },
-        {
-          $push: {
-            parts: newStoryPart,
-          },
-        },
-      )
+      await redis.set(`story:${uuid}`, JSON.stringify(updatedStory))
     } else {
-      const session = client.startSession()
-
-      try {
-        await stories.deleteOne({ uuid }, { session })
-
-        await completedStories.insertOne(
-          {
-            ...story,
-            parts: [...story?.parts, newStoryPart],
-          },
-          { session },
-        )
-      } finally {
-        await session.endSession()
-      }
+      await redis.set(`story:${uuid}`, JSON.stringify(updatedStory))
+      await redis.sRem("stories:active", uuid)
+      await redis.sAdd("stories:completed", uuid)
     }
 
     return NextResponse.json({ success: true })

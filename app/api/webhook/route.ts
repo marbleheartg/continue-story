@@ -1,9 +1,17 @@
-import { usersCollection } from "@/db"
+import { redis } from "@/db"
 import { PROJECT_TITLE } from "@/lib/constants"
 import { parseWebhookEvent, ParseWebhookEvent, verifyAppKeyWithNeynar } from "@farcaster/frame-node"
 import axios from "axios"
 import { randomUUID } from "crypto"
 import { NextRequest, NextResponse } from "next/server"
+
+type UserData = {
+    uuid: string
+    fid: number
+    lastLogged: string | Date
+    createdAt: string | Date
+    notificationToken?: string
+}
 
 export async function POST(req: NextRequest) {
   const { NEXT_PUBLIC_HOST } = process.env
@@ -34,21 +42,32 @@ export async function POST(req: NextRequest) {
 
     const event = data.event
 
-    switch (event.event) {
-      case "frame_added":
-        if (event.notificationDetails) {
-          await usersCollection.updateOne(
-            { fid },
-            {
-              $set: { notificationToken: event.notificationDetails.token },
-              $setOnInsert: {
+    const updateUser = async (updates: Partial<UserData>, upsert = false) => {
+        const userRaw = await redis.get(`user:${fid}`)
+        let user: UserData | null = userRaw ? JSON.parse(userRaw) : null
+        
+        if (!user && upsert) {
+             user = {
+                uuid: randomUUID(),
                 fid,
                 lastLogged: new Date(),
                 createdAt: new Date(),
-              },
-            },
-            { upsert: true },
-          )
+                ...updates
+            } as UserData
+        } else if (user) {
+            user = { ...user, ...updates }
+        }
+
+        if (user) {
+            await redis.set(`user:${fid}`, JSON.stringify(user))
+        }
+        return user
+    }
+
+    switch (event.event) {
+      case "frame_added":
+        if (event.notificationDetails) {
+          await updateUser({ notificationToken: event.notificationDetails.token }, true)
 
           await axios.post("https://api.farcaster.xyz/v1/frame-notifications", {
             notificationId: randomUUID(),
@@ -58,27 +77,27 @@ export async function POST(req: NextRequest) {
             tokens: [event.notificationDetails.token],
           })
         } else {
-          await usersCollection.updateOne({ fid }, { $unset: { notificationToken: "" } })
+          const userRaw = await redis.get(`user:${fid}`)
+          const user = userRaw ? JSON.parse(userRaw) : null
+          if (user) {
+              delete user.notificationToken
+              await redis.set(`user:${fid}`, JSON.stringify(user))
+          }
         }
 
         break
       case "frame_removed":
-        await usersCollection.updateOne({ fid }, { $unset: { notificationToken: "" } })
-
+         {
+            const userRaw = await redis.get(`user:${fid}`)
+            const user = userRaw ? JSON.parse(userRaw) : null
+            if (user) {
+                delete user.notificationToken
+                await redis.set(`user:${fid}`, JSON.stringify(user))
+            }
+         }
         break
       case "notifications_enabled":
-        await usersCollection.updateOne(
-          { fid },
-          {
-            $set: { notificationToken: event.notificationDetails.token },
-            $setOnInsert: {
-              fid,
-              lastLogged: new Date(),
-              createdAt: new Date(),
-            },
-          },
-          { upsert: true },
-        )
+        await updateUser({ notificationToken: event.notificationDetails.token }, true)
 
         await axios.post("https://api.farcaster.xyz/v1/frame-notifications", {
           notificationId: randomUUID(),
@@ -90,7 +109,14 @@ export async function POST(req: NextRequest) {
 
         break
       case "notifications_disabled":
-        await usersCollection.updateOne({ fid }, { $unset: { notificationToken: "" } })
+         {
+            const userRaw = await redis.get(`user:${fid}`)
+            const user = userRaw ? JSON.parse(userRaw) : null
+            if (user) {
+                delete user.notificationToken
+                await redis.set(`user:${fid}`, JSON.stringify(user))
+            }
+         }
         break
     }
 
