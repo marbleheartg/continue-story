@@ -65,7 +65,7 @@ const Button = () => {
         onClick={handleClick}
         disabled={disabled}
       >
-        {rules.enabled ? <Image src="/images/arrow.svg" alt="arrow" width={32} height={32} /> : <Image src="/images/feather.svg" alt="feather" width={32} height={32} />}
+        {rules.enabled ? <Image src="/images/arrow.svg" alt="arrow" width={24} height={24} /> : <Image src="/images/feather.svg" alt="feather" width={32} height={32} />}
       </button>
     </div>
   )
