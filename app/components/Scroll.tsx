@@ -18,7 +18,8 @@ const poorStory = Poor_Story({
 const Scroll = () => {
   const { user, story, storyPart, rules, scrollOpen, scrollVisible, muted } = store()
 
-  const [like, setLike] = useState(story?.likes.some(val => val == user?.fid))
+  const [like, setLike] = useState(story?.likes.some((val) => val == user?.fid))
+
   const [suggestion, setSuggestion] = useState<string>(begin[Math.floor(Math.random() * begin.length)])
 
   useEffect(() => {
@@ -26,7 +27,7 @@ const Scroll = () => {
   }, [scrollOpen])
 
   useEffect(() => {
-    setLike(story?.likes.some(val => val == user?.fid)!)
+    setLike(story?.likes.some((val) => val == user?.fid)!)
   }, [story])
 
   const inputRef = useRef<HTMLInputElement>(null)
@@ -36,7 +37,7 @@ const Scroll = () => {
 
   useEffect(() => {
     async function init() {
-      const { story } = await axios.get("/api/story").then(res => res.data)
+      const { story } = await axios.get("/api/story").then((res) => res.data)
 
       updateStore({
         story,
@@ -79,10 +80,7 @@ const Scroll = () => {
               >
                 <Image src="/images/scroll.png" alt="Scroll Open" fill draggable="false" />
 
-                <div
-                  className={`absolute z-10 top-25 left-9 max-w-[80%] text-2xl leading-9 ${poorStory.className} overflow-hidden`}
-                  onClick={() => inputRef.current?.focus()}
-                >
+                <div className={`absolute z-10 top-25 left-9 max-w-[80%] text-2xl leading-9 ${poorStory.className} overflow-hidden`} onClick={() => inputRef.current?.focus()}>
                   {story?.parts &&
                     scrollOpen &&
                     scrollVisible &&
@@ -90,17 +88,13 @@ const Scroll = () => {
                       <span>{rules.text}</span>
                     ) : (
                       <span>
-                        <span>{story?.parts.map(part => part.text).join("")} </span>
+                        <span>{story?.parts.map((part) => part.text).join("")} </span>
 
                         <span className={`${storyPart ? "" : "opacity-30"}`} dir="ltr">
                           {storyPart || suggestion}
                         </span>
                         <span>{" _ "}</span>
-                        <span
-                          className={`inline-block blink ${storyPart.length < 15 ? "text-red-900" : "text-green-900"}`}
-                        >
-                          {30 - storyPart.length}
-                        </span>
+                        <span className={`inline-block blink ${storyPart.length < 15 ? "text-red-900" : "text-green-900"}`}>{30 - storyPart.length}</span>
                       </span>
                     ))}
 
@@ -111,20 +105,18 @@ const Scroll = () => {
                     onBeforeInput={(e: any) => {
                       const key = e.data
 
-                      if (storyPart.length && e.inputType === "deleteContentBackward")
-                        return updateStore(prev => ({ storyPart: prev.storyPart.slice(0, -1) }))
+                      if (storyPart.length && e.inputType === "deleteContentBackward") return updateStore((prev) => ({ storyPart: prev.storyPart.slice(0, -1) }))
 
                       if (/[a-zA-Z0-9 .,!?'"\-:;()]/.test(key) || /\p{Emoji}/u.test(key)) {
                         if (storyPart.length >= 30 || (storyPart.at(-1) === " " && key === " ")) return
 
                         if (!muted) playPen(penSoundRef, e)
 
-                        updateStore(prev => ({ storyPart: prev.storyPart + key }))
+                        updateStore((prev) => ({ storyPart: prev.storyPart + key }))
                       }
                     }}
-                    onKeyDown={e => {
-                      if (storyPart.length && e.key === "Backspace")
-                        return updateStore(prev => ({ storyPart: prev.storyPart.slice(0, -1) }))
+                    onKeyDown={(e) => {
+                      if (storyPart.length && e.key === "Backspace") return updateStore((prev) => ({ storyPart: prev.storyPart.slice(0, -1) }))
                     }}
                     className="max-w-full focus:outline-none placeholder-black opacity-0 w-0 h-0 "
                     spellCheck={false}
@@ -168,7 +160,7 @@ const Scroll = () => {
 
                             updateStore({ scrollOpen: false })
 
-                            const { story } = await axios.get("/api/story").then(res => res.data)
+                            const { story } = await axios.get("/api/story").then((res) => res.data)
 
                             await updateStore({
                               story,
@@ -193,24 +185,22 @@ const Scroll = () => {
                           if (!story?.parts.length) return
 
                           try {
-                            setLike(prev => !prev)
+                            setLike((prev) => !prev)
 
                             const { story } = store.getState()
 
                             if (story?.uuid) {
-                              await axiosInstance.post("/api/like", { uuid: story?.uuid }).then(res => res.data)
+                              await axiosInstance.post("/api/like", { uuid: story?.uuid }).then((res) => res.data)
                             } else throw new Error("Not enough data to like")
                           } catch (error) {
-                            setLike(prev => !prev)
+                            setLike((prev) => !prev)
                           }
                         }}
                       />
                     </div>
                   </div>
                 )}
-                {scrollOpen && scrollVisible && (
-                  <div className="absolute inset-10 -z-10 shadow-[0_0_25px_60px_rgba(0,0,0,0.3)]"></div>
-                )}
+                {scrollOpen && scrollVisible && <div className="absolute inset-10 -z-10 shadow-[0_0_25px_60px_rgba(0,0,0,0.3)]"></div>}
               </motion.div>
             ) : (
               <motion.div
@@ -230,13 +220,7 @@ const Scroll = () => {
                 }}
                 className="absolute inset-0"
               >
-                <Image
-                  src="/images/scrolled.png"
-                  alt="Scroll Closed"
-                  fill
-                  className="object-contain object-top"
-                  draggable="false"
-                />
+                <Image src="/images/scrolled.png" alt="Scroll Closed" fill className="object-contain object-top" draggable="false" />
               </motion.div>
             )}
           </AnimatePresence>
