@@ -7,7 +7,7 @@ const FRAME = {
   imageUrl: `https://${process.env.NEXT_PUBLIC_HOST}/images/ogimage.png`,
   aspectRatio: "3:2",
   button: {
-    title: "clean",
+    title: "open",
     action: {
       type: "launch_frame",
       url: `https://${process.env.NEXT_PUBLIC_HOST}`,

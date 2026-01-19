@@ -32,7 +32,7 @@ const Header = () => {
 
             updateStore({ scrollOpen: false })
 
-            updateStore(prev => ({
+            updateStore((prev) => ({
               rules: { ...prev.rules, enabled: !prev.rules.enabled },
             }))
           } catch (error) {
@@ -42,12 +42,10 @@ const Header = () => {
           }
         }}
       >
-        <Image src="/images/info.png" alt="info" width={28} height={28} />
+        <Image src="/images/info.svg" alt="info" width={28} height={28} />
       </button>
 
-      <h1
-        className={`fixed top-13 left-0 right-0 flex flex-col items-center mx-auto text-center text-[var(--primary)] ${spicyRice.className} w-fit`}
-      >
+      <h1 className={`fixed top-13 left-0 right-0 flex flex-col items-center mx-auto text-center text-[var(--primary)] ${spicyRice.className} w-fit`}>
         <span className="text-3xl leading-[0.83] uppercase">Continue</span>
         <span className="translate-x-0.5">
           <span className="text-2xl pr-1 leading-[0.83] tracking-[2%]">the</span>
@@ -64,13 +62,7 @@ const Header = () => {
           if (fid) await sdk.actions.viewProfile({ fid })
         }}
       >
-        <Image
-          className="rounded-full border-2 border-white"
-          src={user?.pfpUrl || "/images/profile.png"}
-          alt="profile"
-          width={38}
-          height={38}
-        />
+        <Image className="rounded-full border-2 border-white" src={user?.pfpUrl || "/images/profile.png"} alt="profile" width={38} height={38} />
       </button>
     </header>
   )

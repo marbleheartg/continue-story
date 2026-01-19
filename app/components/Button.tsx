@@ -9,9 +9,7 @@ import { useEffect, useRef, useState } from "react"
 import { useShallow } from "zustand/react/shallow"
 
 const Button = () => {
-  const { storyPart, rules, scrollOpen } = store(
-    useShallow((state) => ({ storyPart: state.storyPart, rules: state.rules, scrollOpen: state.scrollOpen }))
-  )
+  const { storyPart, rules, scrollOpen } = store(useShallow((state) => ({ storyPart: state.storyPart, rules: state.rules, scrollOpen: state.scrollOpen })))
 
   const disabled = !rules.enabled && (!scrollOpen || storyPart.length < 15)
 
@@ -26,7 +24,7 @@ const Button = () => {
   async function handleClick() {
     const { client, muted, story, storyPart } = store.getState()
 
-    if (count < 4) setCount(prev => prev + 1)
+    if (count < 4) setCount((prev) => prev + 1)
 
     try {
       if (count == 3 && !client?.added) await sdk.actions.addFrame()
@@ -37,15 +35,14 @@ const Button = () => {
       updateStore({ scrollOpen: false })
 
       if (rules.enabled) {
-        updateStore(prev => ({
+        updateStore((prev) => ({
           rules: { ...prev.rules, enabled: false },
         }))
       } else if (storyPart) {
-        if (story?.uuid)
-          await axiosInstance.post("/api/story", { uuid: story?.uuid, text: storyPart }).then(res => res.data)
+        if (story?.uuid) await axiosInstance.post("/api/story", { uuid: story?.uuid, text: storyPart }).then((res) => res.data)
         else throw new Error("Not enough data")
 
-        const { story: newStory } = await axios.get("/api/story").then(res => res.data)
+        const { story: newStory } = await axios.get("/api/story").then((res) => res.data)
 
         updateStore({
           story: newStory,
@@ -68,11 +65,7 @@ const Button = () => {
         onClick={handleClick}
         disabled={disabled}
       >
-        {rules.enabled ? (
-          <Image src="/images/arrow.png" alt="arrow" width={32} height={32} />
-        ) : (
-          <Image src="/images/feather.png" alt="feather" width={32} height={32} />
-        )}
+        {rules.enabled ? <Image src="/images/arrow.svg" alt="arrow" width={32} height={32} /> : <Image src="/images/feather.svg" alt="feather" width={32} height={32} />}
       </button>
     </div>
   )
