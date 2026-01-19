@@ -4,6 +4,15 @@ if (!process.env.REDIS_URL) {
   throw new Error("Missing REDIS_URL")
 }
 
-export const redis = await createClient({ url: process.env.REDIS_URL })
-  .on("error", err => console.error("Redis Client Error", err))
-  .connect()
+const globalForRedis = global as unknown as { redis: ReturnType<typeof createClient> }
+
+export const redis =
+  globalForRedis.redis ||
+  createClient({ url: process.env.REDIS_URL })
+    .on("error", (err) => console.error("Redis Client Error", err))
+
+if (!redis.isOpen) {
+  await redis.connect()
+}
+
+if (process.env.NODE_ENV !== "production") globalForRedis.redis = redis

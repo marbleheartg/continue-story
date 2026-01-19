@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { Poor_Story } from "next/font/google"
 import Image from "next/image"
 import { useEffect, useRef, useState } from "react"
+import { useShallow } from "zustand/react/shallow"
 
 const poorStory = Poor_Story({
   subsets: ["latin"],
@@ -16,7 +17,17 @@ const poorStory = Poor_Story({
 })
 
 const Scroll = () => {
-  const { user, story, storyPart, rules, scrollOpen, scrollVisible, muted } = store()
+  const { user, story, storyPart, rules, scrollOpen, scrollVisible, muted } = store(
+    useShallow((state) => ({
+      user: state.user,
+      story: state.story,
+      storyPart: state.storyPart,
+      rules: state.rules,
+      scrollOpen: state.scrollOpen,
+      scrollVisible: state.scrollVisible,
+      muted: state.muted,
+    }))
+  )
 
   const [like, setLike] = useState(story?.likes.some((val) => val == user?.fid))
 
@@ -78,7 +89,14 @@ const Scroll = () => {
                 }}
                 className="absolute inset-0"
               >
-                <Image src="/images/scroll.png" alt="Scroll Open" fill draggable="false" />
+                <Image
+                  src="/images/scroll.png"
+                  alt="Scroll Open"
+                  fill
+                  draggable="false"
+                  priority
+                  sizes="(max-width: 360px) 100vw, 360px"
+                />
 
                 <div className={`absolute z-10 top-25 left-9 max-w-[80%] text-2xl leading-9 ${poorStory.className} overflow-hidden`} onClick={() => inputRef.current?.focus()}>
                   {story?.parts &&
@@ -220,7 +238,14 @@ const Scroll = () => {
                 }}
                 className="absolute inset-0"
               >
-                <Image src="/images/scrolled.png" alt="Scroll Closed" fill className="object-contain object-top" draggable="false" />
+                <Image
+                  src="/images/scrolled.png"
+                  alt="Scroll Closed"
+                  fill
+                  className="object-contain object-top"
+                  draggable="false"
+                  sizes="(max-width: 360px) 100vw, 360px"
+                />
               </motion.div>
             )}
           </AnimatePresence>

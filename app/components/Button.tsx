@@ -6,9 +6,12 @@ import sdk from "@farcaster/frame-sdk"
 import axios from "axios"
 import Image from "next/image"
 import { useEffect, useRef, useState } from "react"
+import { useShallow } from "zustand/react/shallow"
 
 const Button = () => {
-  const { storyPart, rules, scrollOpen } = store()
+  const { storyPart, rules, scrollOpen } = store(
+    useShallow((state) => ({ storyPart: state.storyPart, rules: state.rules, scrollOpen: state.scrollOpen }))
+  )
 
   const disabled = !rules.enabled && (!scrollOpen || storyPart.length < 15)
 
