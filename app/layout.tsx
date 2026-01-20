@@ -22,6 +22,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="preconnect" href="https://auth.farcaster.xyz" />
+        <meta name="base:app_id" content="696f52d6c0ab25addaaaf782" />
       </head>
       <body className="antialiased">{children}</body>
     </html>
