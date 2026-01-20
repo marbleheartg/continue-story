@@ -1,11 +1,11 @@
 import axiosInstance from "@/lib/api/config"
 import delay from "@/lib/api/utils/delay"
-import { initScroll } from "@/lib/audio/scroll"
+import { useScrollSound } from "@/lib/hooks/useScrollSound"
 import { store, updateStore } from "@/store"
 import sdk from "@farcaster/frame-sdk"
 import axios from "axios"
 import Image from "next/image"
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { useShallow } from "zustand/react/shallow"
 
 const Button = () => {
@@ -13,13 +13,9 @@ const Button = () => {
 
   const disabled = !rules.enabled && (!scrollOpen || storyPart.length < 15)
 
-  const scrollSoundRef = useRef<HTMLAudioElement | null>(null)
+  const scrollSoundRef = useScrollSound()
 
   const [count, setCount] = useState(0)
-
-  useEffect(() => {
-    initScroll(scrollSoundRef)
-  }, [])
 
   async function handleClick() {
     const { client, muted, story, storyPart } = store.getState()

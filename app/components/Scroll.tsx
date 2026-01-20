@@ -1,8 +1,9 @@
 import axiosInstance from "@/lib/api/config"
 import delay from "@/lib/api/utils/delay"
-import { startAudio } from "@/lib/audio/background"
-import { initPen, playPen } from "@/lib/audio/pen"
-import { initScroll } from "@/lib/audio/scroll"
+import { playPen } from "@/lib/audio/pen"
+import { STORY_STARTERS } from "@/lib/constants"
+import { useStoryAudio } from "@/lib/hooks/useStoryAudio"
+import { useStoryData } from "@/lib/hooks/useStoryData"
 import { store, updateStore } from "@/store"
 import axios from "axios"
 import { AnimatePresence, motion } from "framer-motion"
@@ -31,10 +32,10 @@ const Scroll = () => {
 
   const [like, setLike] = useState(story?.likes.some((val) => val == user?.fid))
 
-  const [suggestion, setSuggestion] = useState<string>(begin[Math.floor(Math.random() * begin.length)])
+  const [suggestion, setSuggestion] = useState<string>(STORY_STARTERS[Math.floor(Math.random() * STORY_STARTERS.length)])
 
   useEffect(() => {
-    setSuggestion(begin[Math.floor(Math.random() * begin.length)])
+    setSuggestion(STORY_STARTERS[Math.floor(Math.random() * STORY_STARTERS.length)])
   }, [scrollOpen])
 
   useEffect(() => {
@@ -42,29 +43,8 @@ const Scroll = () => {
   }, [story])
 
   const inputRef = useRef<HTMLInputElement>(null)
-  const bgSoundRef = useRef<HTMLAudioElement | null>(null)
-  const penSoundRef = useRef<HTMLAudioElement | null>(null)
-  const scrollSoundRef = useRef<HTMLAudioElement | null>(null)
-
-  useEffect(() => {
-    async function init() {
-      const { story } = await axios.get("/api/story").then((res) => res.data)
-
-      updateStore({
-        story,
-      })
-    }
-
-    init()
-
-    initPen(penSoundRef)
-    const cleanup = startAudio(bgSoundRef)
-    initScroll(scrollSoundRef)
-
-    return () => {
-      cleanup()
-    }
-  }, [])
+  const { bgSoundRef, penSoundRef, scrollSoundRef } = useStoryAudio()
+  useStoryData()
 
   return (
     <div className="fixed top-[17vh] left-2 right-2 flex justify-center">
@@ -99,6 +79,11 @@ const Scroll = () => {
                 />
 
                 <div className={`absolute z-10 top-25 left-9 max-w-[80%] text-2xl leading-9 ${poorStory.className} overflow-hidden`} onClick={() => inputRef.current?.focus()}>
+                  {!story && scrollOpen && scrollVisible && (
+                    <div className="text-center w-full mt-10 opacity-50">
+                      Loading story...
+                    </div>
+                  )}
                   {story?.parts &&
                     scrollOpen &&
                     scrollVisible &&
@@ -256,46 +241,3 @@ const Scroll = () => {
 }
 
 export default Scroll
-
-const begin = [
-  "It began with a whisper.",
-  "The key was glowing again.",
-  "She opened the wrong door.",
-  "Rain fell on the letter.",
-  "He forgot who he was.",
-  "The clock struck 13.",
-  "Voices echoed in the darks.",
-  "They never found the map.",
-  "A shadow crossed the moon.",
-  "I lied to save him.",
-  "Smoke curled from the book.",
-  "He knocked. No answer came.",
-  "She wore someone else's face.",
-  "The forest remembered her.",
-  "Glass cracked under his feet.",
-  "My name isn't really mine.",
-  "The stars blinked out.",
-  "It wasn't blood this time.",
-  "The painting followed him home.",
-  "Silence fell too quickly.",
-  "She left through the mirror.",
-  "A voice hummed from the sink.",
-  "The clouds moved too fast.",
-  "His eyes weren't his own.",
-  "The door was never there.",
-  "Fire danced on the ceiling.",
-  "I woke up somewhere else.",
-  "Something laughed in the dark.",
-  "The bed was still warm.",
-  "Her shadow stayed behind.",
-  "The walls began to breathe.",
-  "He dreamed in other lives.",
-  "Keys fell from the sky.",
-  "The moonlight felt wrong.",
-  "A second sun appeared.",
-  "She spoke in backwards words.",
-  "The mirror blinked first.",
-  "I found teeth in the drawer.",
-  "Time ran out at noon.",
-  "He vanished mid-sentence.",
-]

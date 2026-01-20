@@ -1,10 +1,9 @@
 import delay from "@/lib/api/utils/delay"
-import { initScroll } from "@/lib/audio/scroll"
+import { useScrollSound } from "@/lib/hooks/useScrollSound"
 import { store, updateStore } from "@/store"
 import sdk from "@farcaster/frame-sdk"
 import { Spicy_Rice } from "next/font/google"
 import Image from "next/image"
-import { useEffect, useRef } from "react"
 import { useShallow } from "zustand/react/shallow"
 
 const spicyRice = Spicy_Rice({
@@ -15,11 +14,7 @@ const spicyRice = Spicy_Rice({
 const Header = () => {
   const { user, muted } = store(useShallow((state) => ({ user: state.user, muted: state.muted })))
 
-  const scrollSoundRef = useRef<HTMLAudioElement | null>(null)
-
-  useEffect(() => {
-    initScroll(scrollSoundRef)
-  }, [])
+  const scrollSoundRef = useScrollSound()
 
   return (
     <header>
